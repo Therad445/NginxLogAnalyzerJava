@@ -1,8 +1,8 @@
 package backend.academy.loganalyzer.template;
 
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDateTime;
 
 /**
  * LogRecord.java — POJO, представляющий одну запись лога с полями, соответствующими структуре NGINX логов.

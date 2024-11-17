@@ -9,9 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.stream.Stream;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class LogPathSelector {
-    public static Stream<String> TypeSelector(String path) throws IOException {
+    public static Stream<String> typeSelector(String path) throws IOException {
         return getStringStream(path);
     }
 
