@@ -7,12 +7,12 @@ import backend.academy.loganalyzer.reader.LogPathSelector;
 import backend.academy.loganalyzer.report.AsciidocFormat;
 import backend.academy.loganalyzer.report.LogReportFormat;
 import backend.academy.loganalyzer.report.MarkdownFormat;
-import backend.academy.loganalyzer.template.LogResult;
 import backend.academy.loganalyzer.template.LogRecord;
+import backend.academy.loganalyzer.template.LogResult;
+import com.beust.jcommander.JCommander;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import com.beust.jcommander.JCommander;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
 
@@ -46,7 +46,7 @@ public class Main {
         LogAnalyzer analyzer = new LogAnalyzer();
         try {
             // Создаем поток
-            Stream<String> stringStream = LogPathSelector.TypeSelector(path);
+            Stream<String> stringStream = LogPathSelector.typeSelector(path);
 
             // Обрабатываем поток
             List<LogRecord> logs = parser.parse(stringStream);

@@ -46,14 +46,14 @@ public class NginxLogParser {
     private Optional<LogRecord> parseLine(String line) {
         Matcher matcher = LOG_PATTERN.matcher(line);
         if (matcher.matches()) {
-            LogRecord record = new LogRecord();
-            record.remoteAddr(matcher.group("ip"));
-            record.request(matcher.group("request"));
-            record.status(Integer.parseInt(matcher.group("status")));
-            record.bodyBytesSent(Integer.parseInt(matcher.group("bytes")));
-            record.userAgent(matcher.group("agent"));
-            record.method(matcher.group("method"));
-            return Optional.of(record);
+            LogRecord logRecord = new LogRecord();
+            logRecord.remoteAddr(matcher.group("ip"));
+            logRecord.request(matcher.group("request"));
+            logRecord.status(Integer.parseInt(matcher.group("status")));
+            logRecord.bodyBytesSent(Integer.parseInt(matcher.group("bytes")));
+            logRecord.userAgent(matcher.group("agent"));
+            logRecord.method(matcher.group("method"));
+            return Optional.of(logRecord);
         }
         return Optional.empty();
     }

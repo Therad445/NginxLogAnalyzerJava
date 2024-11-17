@@ -34,14 +34,12 @@ public class LogAnalyzer {
 
     public List<LogRecord> filterLogs(List<LogRecord> logs, String filterField, String filterValue) {
         return logs.stream()
-            .filter(log -> {
-                return switch (filterField) {
-                    case "method" -> log.method().equalsIgnoreCase(filterValue);
-                    case "agent" -> log.userAgent().startsWith(filterValue.replace("*", ""));
-                    case "status" -> String.valueOf(log.status()).equals(filterValue);
-                    case "request" -> log.request().contains(filterValue);
-                    default -> false;
-                };
+            .filter(log -> switch (filterField) {
+                case "method" -> log.method().equalsIgnoreCase(filterValue);
+                case "agent" -> log.userAgent().startsWith(filterValue.replace("*", ""));
+                case "status" -> String.valueOf(log.status()).equals(filterValue);
+                case "request" -> log.request().contains(filterValue);
+                default -> false;
             })
             .collect(Collectors.toList());
     }
