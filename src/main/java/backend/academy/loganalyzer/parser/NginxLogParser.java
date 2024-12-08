@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NginxLogParser {
@@ -38,9 +37,8 @@ public class NginxLogParser {
     public List<LogRecord> parse(Stream<String> logLines) {
         return logLines
             .map(this::parseLine)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
+            .flatMap(Optional::stream)
+            .toList();
     }
 
     private Optional<LogRecord> parseLine(String line) {
