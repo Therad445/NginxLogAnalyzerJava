@@ -8,11 +8,8 @@ import java.util.stream.Collectors;
 /**
  * LogAnalyzer.java — отвечает за сбор и вычисление статистики на основе парсированных логов.
  */
-public class LogAnalyzer {
 
-    public long countTotalRequests(List<LogRecord> logs) {
-        return logs.size();
-    }
+public class LogAnalyzer {
 
     public Map<String, Long> countResources(List<LogRecord> logs) {
         return logs.stream()
@@ -32,16 +29,12 @@ public class LogAnalyzer {
 
     }
 
-    public List<LogRecord> filterLogs(List<LogRecord> logs, String filterField, String filterValue) {
-        return logs.stream()
-            .filter(log -> switch (filterField) {
-                case "method" -> log.method().equalsIgnoreCase(filterValue);
-                case "agent" -> log.userAgent().startsWith(filterValue.replace("*", ""));
-                case "status" -> String.valueOf(log.status()).equals(filterValue);
-                case "request" -> log.request().contains(filterValue);
-                default -> false;
-            })
-            .collect(Collectors.toList());
+    public long countTotalRequests(List<LogRecord> logs) {
+        return logs.size();
+    }
+
+    public List<LogRecord> applyFilter(List<LogRecord> logs, LogFilter filter) {
+        return filter.filter(logs);
     }
 
 }

@@ -1,5 +1,6 @@
 package backend.academy;
 
+import backend.academy.loganalyzer.analyzer.FieldLogFilter;
 import backend.academy.loganalyzer.analyzer.LogAnalyzer;
 import backend.academy.loganalyzer.config.Config;
 import backend.academy.loganalyzer.parser.NginxLogParser;
@@ -36,7 +37,7 @@ public class Main {
             Stream<String> stringStream = LogPathSelector.typeSelector(path);
             List<LogRecord> logs = parser.parse(stringStream);
             if (filterField != null && filterValue != null) {
-                logs = analyzer.filterLogs(logs, filterField, filterValue);
+                logs = analyzer.applyFilter(logs, new FieldLogFilter(filterField, filterValue));
             }
 
             long totalRequests = analyzer.countTotalRequests(logs);
