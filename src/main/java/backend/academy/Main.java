@@ -4,7 +4,8 @@ import backend.academy.loganalyzer.analyzer.FieldLogFilter;
 import backend.academy.loganalyzer.analyzer.LogAnalyzer;
 import backend.academy.loganalyzer.config.Config;
 import backend.academy.loganalyzer.parser.NginxLogParser;
-import backend.academy.loganalyzer.reader.LogPathSelector;
+import backend.academy.loganalyzer.reader.Reader;
+import backend.academy.loganalyzer.reader.ReaderSelector;
 import backend.academy.loganalyzer.report.AsciidocFormat;
 import backend.academy.loganalyzer.report.LogReportFormat;
 import backend.academy.loganalyzer.report.MarkdownFormat;
@@ -34,7 +35,8 @@ public class Main {
         NginxLogParser parser = new NginxLogParser();
         LogAnalyzer analyzer = new LogAnalyzer();
         try {
-            Stream<String> stringStream = LogPathSelector.typeSelector(path);
+            Reader reader = ReaderSelector.typeSelector(path);
+            Stream<String> stringStream = reader.read(path);
             List<LogRecord> logs = parser.parse(stringStream);
             if (filterField != null && filterValue != null) {
                 logs = analyzer.applyFilter(logs, new FieldLogFilter(filterField, filterValue));
