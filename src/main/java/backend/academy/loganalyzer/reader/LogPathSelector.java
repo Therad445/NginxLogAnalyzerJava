@@ -27,7 +27,7 @@ public class LogPathSelector {
         }
     }
 
-    private static void checkPath(String path) throws NoSuchFileException {
+    public static void checkPath(String path) throws NoSuchFileException {
         Path filePath = Path.of(path);
         if (!Files.exists(filePath)) {
             throw new NoSuchFileException("Нет файла по пути: " + filePath.toAbsolutePath());
@@ -45,7 +45,7 @@ public class LogPathSelector {
         return reader.lines();
     }
 
-    private static boolean isUrl(String input) {
+    public static boolean isUrl(String input) {
         try {
             new URI(input).toURL();
             return true;
