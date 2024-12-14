@@ -9,6 +9,7 @@ import backend.academy.loganalyzer.reader.Reader;
 import backend.academy.loganalyzer.reader.ReaderSelector;
 import backend.academy.loganalyzer.report.AsciidocFormat;
 import backend.academy.loganalyzer.report.LogReportFormat;
+import backend.academy.loganalyzer.report.LogReportFormatFactory;
 import backend.academy.loganalyzer.report.MarkdownFormat;
 import backend.academy.loganalyzer.template.LogRecord;
 import backend.academy.loganalyzer.template.LogResult;
@@ -27,8 +28,7 @@ public class Main {
     public static void main(String[] args) {
         Config config = new Config();
         JCommander.newBuilder().addObject(config).build().parse(args);
-        LogReportFormat
-            formatter = "adoc".equalsIgnoreCase(config.format()) ? new AsciidocFormat() : new MarkdownFormat();
+        LogReportFormat formatter = LogReportFormatFactory.getLogReportFormat(config.format());
         LogResult result = getLogResult(config.path(), config.filterField(), config.filterValue(),
         config.from(), config.to());
         log.info(formatter.format(result));
