@@ -1,11 +1,11 @@
 package backend.academy.loganalyzer.reader;
 
-import lombok.experimental.UtilityClass;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ReaderSelector {
