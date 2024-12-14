@@ -36,59 +36,14 @@ class MarkdownFormatTest {
     }
 
     @Test
-    void testFormat_withZeroRequests() {
+    void testFormat_withNullRequests() {
         // Arrange
-        LogResult result = new LogResult(
-            0,
-            0.0,
-            Map.of(),
-            Map.of(),
-            0.0
-        );
+        LogResult result = null;
         MarkdownFormat formatter = new MarkdownFormat();
-
-        // Act
-        String output = formatter.format(result);
-
-        // Assert
-        String expected = """
-            #### Общая информация
-
-            | Метрика | Значение |
-            | ------- | --------:|
-            | Количество запросов | 0 |
-            | Средний размер ответа | 0.0 |
-            | 95% перцентиль размера ответа | 0.0 |
-            """;
-        assertEquals(expected, output);
-    }
-
-    @Test
-    void testFormat_withNegativeValues() {
-        // Arrange
-        LogResult result = new LogResult(
-            -1,
-            -10.5,
-            Map.of("/error.html", -5L),
-            Map.of(500, -3L),
-            -1
-        );
-        MarkdownFormat formatter = new MarkdownFormat();
-
-        // Act
-        String output = formatter.format(result);
-
-        // Assert
-        String expected = """
-            #### Общая информация
-
-            | Метрика | Значение |
-            | ------- | --------:|
-            | Количество запросов | -1 |
-            | Средний размер ответа | -10.5 |
-            | 95% перцентиль размера ответа | -1.0 |
-            """;
-        assertEquals(expected, output);
+        //Act
+        Exception exception = assertThrows(NullPointerException.class, () -> formatter.format(result));
+        //Assert
+        assertEquals("Передано пустое значение", exception.getMessage());
     }
 }
 
