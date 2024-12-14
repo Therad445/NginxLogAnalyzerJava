@@ -8,8 +8,8 @@ public class MarkdownFormat implements LogReportFormat {
     public String format(LogResult result) {
         String newLine = " |\n";
         String startLine = "#### Общая информация\n\n"
-            + "| Метрика | Значение " + newLine
-            + "|---------|---------:" + newLine;
+            + "| Метрика | Значение" + newLine
+            + "| ------- | --------:|\n";
         String endLine = "";
         return startLine
             + middleLine(result, newLine)
