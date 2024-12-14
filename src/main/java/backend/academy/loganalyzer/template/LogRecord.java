@@ -17,6 +17,7 @@ import lombok.Setter;
     private long bodyBytesSent;
     private String httpReferer;
     private String userAgent;
+    private LocalDateTime timestamp;
 
     public LogRecord() {
     }

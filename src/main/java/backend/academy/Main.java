@@ -1,5 +1,6 @@
 package backend.academy;
 
+import backend.academy.loganalyzer.analyzer.DateRangeLogFilter;
 import backend.academy.loganalyzer.analyzer.FieldLogFilter;
 import backend.academy.loganalyzer.analyzer.LogAnalyzer;
 import backend.academy.loganalyzer.config.Config;
@@ -12,6 +13,7 @@ import backend.academy.loganalyzer.report.MarkdownFormat;
 import backend.academy.loganalyzer.template.LogRecord;
 import backend.academy.loganalyzer.template.LogResult;
 import com.beust.jcommander.JCommander;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -27,11 +29,12 @@ public class Main {
         JCommander.newBuilder().addObject(config).build().parse(args);
         LogReportFormat
             formatter = "adoc".equalsIgnoreCase(config.format()) ? new AsciidocFormat() : new MarkdownFormat();
-        LogResult result = getLogResult(config.path(), config.filterField(), config.filterValue());
+        LogResult result = getLogResult(config.path(), config.filterField(), config.filterValue(),
+        config.from(), config.to());
         log.info(formatter.format(result));
     }
 
-    private static LogResult getLogResult(String path, String filterField, String filterValue) {
+    private static LogResult getLogResult(String path, String filterField, String filterValue, String from, String to) {
         NginxLogParser parser = new NginxLogParser();
         LogAnalyzer analyzer = new LogAnalyzer();
         try {
@@ -40,6 +43,11 @@ public class Main {
             List<LogRecord> logs = parser.parse(stringStream);
             if (filterField != null && filterValue != null) {
                 logs = analyzer.applyFilter(logs, new FieldLogFilter(filterField, filterValue));
+            }
+
+            if (from != null && to != null) {
+                logs = analyzer.applyFilter(logs,
+                    new DateRangeLogFilter(LocalDateTime.parse(from), LocalDateTime.parse(to)));
             }
 
             long totalRequests = analyzer.countTotalRequests(logs);
