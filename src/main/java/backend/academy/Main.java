@@ -46,8 +46,9 @@ public class Main {
             double averageSize = analyzer.averageResponseSize(logs);
             Map<String, Long> resourceCounts = analyzer.countResources(logs);
             Map<Integer, Long> statusCodeCounts = analyzer.countStatusCodes(logs);
+            double percentile = analyzer.percentile95ResponseSize(logs);
 
-            return new LogResult(totalRequests, averageSize, resourceCounts, statusCodeCounts);
+            return new LogResult(totalRequests, averageSize, resourceCounts, statusCodeCounts, percentile);
         } catch (Exception e) {
             log.error(e);
         }
