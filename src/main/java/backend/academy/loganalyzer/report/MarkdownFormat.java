@@ -6,12 +6,13 @@ public class MarkdownFormat implements LogReportFormat {
 
     @Override
     public String format(LogResult result) {
-
         String newLine = " |\n";
-        return "#### Общая информация\n\n"
-            + "| Метрика | Значение |\n"
-            + "|---------|---------:|\n"
-            + "| Количество запросов | " + result.totalRequests() + newLine
-            + "| Средний размер ответа | " + result.averageResponseSize() + newLine;
+        String startLine = "#### Общая информация\n\n"
+            + "| Метрика | Значение " + newLine
+            + "|---------|---------:" + newLine;
+        String endLine = "";
+        return startLine
+            + middleLine(result, newLine)
+            + endLine;
     }
 }
