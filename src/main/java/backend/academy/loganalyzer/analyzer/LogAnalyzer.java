@@ -37,4 +37,17 @@ public class LogAnalyzer {
         return filter.filter(logs);
     }
 
+    public double percentile95ResponseSize(List<LogRecord> logs) {
+        List<Long> sortedSizes = logs.stream()
+            .map(LogRecord::bodyBytesSent)
+            .sorted()
+            .toList();
+
+        if (sortedSizes.isEmpty()) {
+            return 0.0;
+        }
+
+        int index = (int) Math.ceil(0.95 * sortedSizes.size()) - 1;
+        return sortedSizes.get(index);
+    }
 }
