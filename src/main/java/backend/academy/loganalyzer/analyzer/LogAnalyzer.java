@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 public class LogAnalyzer {
 
+    public static final double PERCENTILE = 0.95;
+
     public Map<String, Long> countResources(List<LogRecord> logs) {
         return logs.stream()
             .collect(Collectors.groupingBy(LogRecord::request, Collectors.counting()));
@@ -47,7 +49,7 @@ public class LogAnalyzer {
             return 0.0;
         }
 
-        int index = (int) Math.ceil(0.95 * sortedSizes.size()) - 1;
+        int index = (int) Math.ceil(PERCENTILE * sortedSizes.size()) - 1;
         return sortedSizes.get(index);
     }
 }

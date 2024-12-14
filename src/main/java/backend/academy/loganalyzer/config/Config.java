@@ -24,7 +24,5 @@ import lombok.Getter;
 
     @Parameter(names = "--filter-value", description = "Переменная фильтрации \"Mozila\" или \"GET\"")
     private String filterValue;
-
-    // Надо потом отрефакторить и сделать поля неизменяемыми?
 }
 
