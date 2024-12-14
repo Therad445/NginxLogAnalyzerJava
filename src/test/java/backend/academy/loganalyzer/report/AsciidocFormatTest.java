@@ -14,7 +14,8 @@ class AsciidocFormatTest {
             100,
             512.5,
             Map.of("/index.html", 50L, "/about.html", 25L),
-            Map.of(200, 80L, 404, 20L)
+            Map.of(200, 80L, 404, 20L),
+            201.5
         );
         AsciidocFormat formatter = new AsciidocFormat();
 
@@ -29,6 +30,7 @@ class AsciidocFormatTest {
             | Метрика | Значение
             | Количество запросов | 100
             | Средний размер ответа | 512.5
+            | 95% перцентиль размера ответа | 201.5
             |===
             """;
         assertEquals(expected, output);
@@ -41,7 +43,8 @@ class AsciidocFormatTest {
             0,
             0.0,
             Map.of(),
-            Map.of()
+            Map.of(),
+            0.0
         );
         AsciidocFormat formatter = new AsciidocFormat();
 
@@ -56,6 +59,7 @@ class AsciidocFormatTest {
             | Метрика | Значение
             | Количество запросов | 0
             | Средний размер ответа | 0.0
+            | 95% перцентиль размера ответа | 0.0
             |===
             """;
         assertEquals(expected, output);
@@ -68,7 +72,8 @@ class AsciidocFormatTest {
             -1,
             -10.5,
             Map.of("/error.html", -5L),
-            Map.of(500, -3L)
+            Map.of(500, -3L),
+            -1
         );
         AsciidocFormat formatter = new AsciidocFormat();
 
@@ -83,6 +88,7 @@ class AsciidocFormatTest {
             | Метрика | Значение
             | Количество запросов | -1
             | Средний размер ответа | -10.5
+            | 95% перцентиль размера ответа | -1.0
             |===
             """;
         assertEquals(expected, output);
