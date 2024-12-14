@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class LogReportFormatFactory {
     public static LogReportFormat getLogReportFormat(String format) {
-        if ("adoc".equalsIgnoreCase(format)) {
+        if ("adoc".equalsIgnoreCase(format) || format == null) {
             return new AsciidocFormat();
         } else if ("markdown".equalsIgnoreCase(format)) {
             return new MarkdownFormat();
