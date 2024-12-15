@@ -7,7 +7,9 @@ import lombok.Setter;
 /**
  * LogRecord.java — POJO, представляющий одну запись лога с полями, соответствующими структуре NGINX логов.
  */
-@Setter @Getter public class LogRecord {
+@Getter
+@Setter
+public class LogRecord {
     private String remoteAddr;
     private String remoteUser;
     private LocalDateTime timeLocal;
@@ -18,7 +20,4 @@ import lombok.Setter;
     private String httpReferer;
     private String userAgent;
     private LocalDateTime timestamp;
-
-    public LogRecord() {
-    }
 }
