@@ -110,4 +110,21 @@ class ReaderSelectorTest {
         //Assert
         assertEquals("Нет файла по данному пути: " + Path.of(path).toAbsolutePath(), exception.getMessage());
     }
+
+    @Test
+    void isUrl_WithoutScheme() {
+        assertFalse(ReaderSelector.isUrl("www.google.com"));
+    }
+
+    @Test
+    void isUrl_WithSubdomain() {
+        assertTrue(ReaderSelector.isUrl("https://sub.example.com"));
+    }
+
+    @Test
+    void checkPath_NullValue() {
+        Exception exception = assertThrows(NullPointerException.class,
+            () -> ReaderSelector.checkPath(null));
+    }
+
 }
