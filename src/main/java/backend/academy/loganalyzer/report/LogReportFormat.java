@@ -10,7 +10,7 @@ public interface LogReportFormat {
 
     default void formatNullCheck(LogResult result) {
         if (result == null) {
-            throw new NullPointerException("Передано пустое значение");
+            throw new NullPointerException("Переданы пустые переменные");
         }
     }
 
