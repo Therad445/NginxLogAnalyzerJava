@@ -4,6 +4,7 @@ import backend.academy.loganalyzer.template.LogRecord;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
@@ -258,5 +259,33 @@ class LogAnalyzerTest {
 
         // Assert
         assertEquals(2000.0, result, 0.1);
+    }
+
+    @Test
+    public void testPercentile95WithEmptyList() {
+        // Arrange
+        List<LogRecord> logs = Collections.emptyList();
+        LogAnalyzer analyzer = new LogAnalyzer();
+
+        // Act
+        double result = analyzer.percentile95ResponseSize(logs);
+
+        // Assert
+        assertEquals(0.0, result);
+    }
+
+    @Test
+    public void testPercentile95WithOneElement() {
+        // Arrange
+        LogRecord log = new LogRecord();
+        log.bodyBytesSent(500L);
+        List<LogRecord> logs = List.of(log);
+        LogAnalyzer analyzer = new LogAnalyzer();
+
+        // Act
+        double result = analyzer.percentile95ResponseSize(logs);
+
+        // Assert
+        assertEquals(500.0, result);
     }
 }
