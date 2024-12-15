@@ -22,7 +22,7 @@ import lombok.Getter;
     @Parameter(names = "--filter-field", description = "Метод фильтрации agent или method")
     private String filterField;
 
-    @Parameter(names = "--filter-value", description = "Переменная фильтрации \"Mozila\" или \"GET\"")
+    @Parameter(names = "--filter-value", description = "Переменная фильтрации \"Mozilla\" или \"GET\"")
     private String filterValue;
 }
 
