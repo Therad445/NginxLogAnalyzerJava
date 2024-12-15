@@ -30,7 +30,7 @@ class NginxLogParserTest {
         // Assert
         assertEquals(2, records.size());
 
-        LogRecord record1 = records.get(0);
+        LogRecord record1 = records.getFirst();
         assertEquals("192.168.1.1", record1.remoteAddr());
         assertEquals("/index.html", record1.request());
         assertEquals("GET", record1.method());
@@ -75,7 +75,7 @@ class NginxLogParserTest {
 
         // Assert
         assertEquals(1, records.size());
-        LogRecord record = records.get(0);
+        LogRecord record = records.getFirst();
         assertEquals("192.168.1.1", record.remoteAddr());
     }
 
