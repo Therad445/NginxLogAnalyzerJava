@@ -15,6 +15,10 @@ public interface LogReportFormat {
     }
 
     default String middleLine(LogResult result, String newLine) {
+        formatNullCheck(result);
+        if (newLine == null || newLine.isEmpty()) {
+            throw new NullPointerException("Передан пустой элемент переноса");
+        }
         return "| Количество запросов | " + result.totalRequests() + newLine
             + "| Средний размер ответа | " + result.averageResponseSize() + newLine
             + "| 95% перцентиль размера ответа | " + result.percentile() + newLine;

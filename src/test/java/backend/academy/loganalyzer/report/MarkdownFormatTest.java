@@ -43,7 +43,7 @@ class MarkdownFormatTest {
         //Act
         Exception exception = assertThrows(NullPointerException.class, () -> formatter.format(result));
         //Assert
-        assertEquals("Передано пустое значение", exception.getMessage());
+        assertEquals("Переданы пустые переменные", exception.getMessage());
     }
 }
 
