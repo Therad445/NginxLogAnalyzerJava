@@ -32,7 +32,8 @@ class LogReportFormatTest {
             512.5,
             Map.of("/index.html", 50L, "/about.html", 25L),
             Map.of(200, 80L, 404, 20L),
-            201.5
+            201.5,
+            Map.of()
         );
         String newLine = null;
         // Act
@@ -55,7 +56,8 @@ class LogReportFormatTest {
             512.5,
             Map.of("/index.html", 50L, "/about.html", 25L),
             Map.of(200, 80L, 404, 20L),
-            201.5
+            201.5,
+            Map.of()
         );
         String newLine = "";
         // Act

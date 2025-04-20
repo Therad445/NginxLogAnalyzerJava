@@ -1,8 +1,12 @@
 package backend.academy.loganalyzer.report;
 
+import backend.academy.loganalyzer.anomaly.Anomaly;
 import backend.academy.loganalyzer.template.LogResult;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class AsciidocFormatTest {
@@ -15,7 +19,8 @@ class AsciidocFormatTest {
             512.5,
             Map.of("/index.html", 50L, "/about.html", 25L),
             Map.of(200, 80L, 404, 20L),
-            201.5
+            201.5,
+            Map.of()
         );
         AsciidocFormat formatter = new AsciidocFormat();
 
@@ -32,6 +37,10 @@ class AsciidocFormatTest {
             | Средний размер ответа | 512.5
             | 95% перцентиль размера ответа | 201.5
             |===
+
+            == Аномалии
+
+            * Не обнаружены
             """;
         assertEquals(expected, output);
     }
@@ -39,12 +48,11 @@ class AsciidocFormatTest {
     @Test
     void testFormat_withNullRequests() {
         // Arrange
-        LogResult result = null;
         AsciidocFormat formatter = new AsciidocFormat();
-        //Act
-        Exception exception = assertThrows(NullPointerException.class, () -> formatter.format(result));
-        //Assert
-        assertEquals("Переданы пустые переменные", exception.getMessage());
-    }
 
+        // Act & Assert
+        Exception ex = assertThrows(NullPointerException.class,
+            () -> formatter.format(null));
+        assertEquals("Переданы пустые переменные", ex.getMessage());
+    }
 }
