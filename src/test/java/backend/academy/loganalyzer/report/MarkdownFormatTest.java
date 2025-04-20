@@ -15,7 +15,8 @@ class MarkdownFormatTest {
             512.5,
             Map.of("/index.html", 50L, "/about.html", 25L),
             Map.of(200, 80L, 404, 20L),
-            201.5
+            201.5,
+            Map.of()
         );
         MarkdownFormat formatter = new MarkdownFormat();
 
@@ -31,6 +32,10 @@ class MarkdownFormatTest {
             | Количество запросов | 100 |
             | Средний размер ответа | 512.5 |
             | 95% перцентиль размера ответа | 201.5 |
+
+            #### Аномалии
+
+            * Не обнаружены
             """;
         assertEquals(expected, output);
     }

@@ -1,108 +1,79 @@
 package backend.academy.loganalyzer.template;
 
+import backend.academy.loganalyzer.anomaly.Anomaly;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class LogResultTest {
 
     @Test
     void LogResultTest_IsValid() {
-        //Arrange
         long totalRequests = 100;
         double averageResponseSize = 512.5;
-        Map<String, Long> resourceCounts = Map.of("/index.html", 50L, "/about.html", 25L);
-        Map<Integer, Long> statusCodeCounts = Map.of(200, 80L, 404, 20L);
+        Map<String,Long> resourceCounts = Map.of("/index.html",50L,"/about.html",25L);
+        Map<Integer,Long> statusCodeCounts = Map.of(200,80L,404,20L);
         double percentile = 201.5;
-        //Act
-        LogResult logResult = new LogResult
-            (totalRequests, averageResponseSize, resourceCounts, statusCodeCounts, percentile);
-        //Assert
-        assertEquals(totalRequests, logResult.totalRequests());
-        assertEquals(averageResponseSize, logResult.averageResponseSize());
-        assertEquals(resourceCounts, logResult.resourceCounts());
-        assertEquals(statusCodeCounts, logResult.statusCodeCounts());
-        assertEquals(percentile, logResult.percentile());
+        Map<String,List<Anomaly>> anomalies = Map.of();
+
+        LogResult logResult = new LogResult(
+            totalRequests, averageResponseSize,
+            resourceCounts, statusCodeCounts,
+            percentile, anomalies);
+
+        assertEquals(totalRequests,          logResult.totalRequests());
+        assertEquals(averageResponseSize,    logResult.averageResponseSize());
+        assertEquals(resourceCounts,         logResult.resourceCounts());
+        assertEquals(statusCodeCounts,       logResult.statusCodeCounts());
+        assertEquals(percentile,             logResult.percentile());
+        assertEquals(anomalies,              logResult.anomalies());
     }
 
     @Test
     void totalRequests_IsNegative() {
-        //Arrange
-        long totalRequests = -100;
-        double averageResponseSize = 512.5;
-        Map<String, Long> resourceCounts = Map.of("/index.html", 50L, "/about.html", 25L);
-        Map<Integer, Long> statusCodeCounts = Map.of(200, 80L, 404, 20L);
-        double percentile = 201.5;
-
-        //Act
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> new LogResult
-            (totalRequests, averageResponseSize, resourceCounts, statusCodeCounts, percentile));
-        //Assert
-        assertEquals("totalRequests меньше нуля", exception.getMessage());
+        Exception ex = assertThrows(IllegalArgumentException.class,
+            () -> new LogResult(-1, 10,
+                Map.of("x",1L), Map.of(200,1L),
+                0.0, Map.of()));
+        assertEquals("totalRequests меньше нуля", ex.getMessage());
     }
 
     @Test
     void averageResponseSize_IsNegative() {
-        //Arrange
-        long totalRequests = 100;
-        double averageResponseSize = -512.5;
-        Map<String, Long> resourceCounts = Map.of("/index.html", 50L, "/about.html", 25L);
-        Map<Integer, Long> statusCodeCounts = Map.of(200, 80L, 404, 20L);
-        double percentile = 201.5;
-
-        //Act
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> new LogResult
-            (totalRequests, averageResponseSize, resourceCounts, statusCodeCounts, percentile));
-        //Assert
-        assertEquals("averageResponseSize меньше нуля", exception.getMessage());
+        Exception ex = assertThrows(IllegalArgumentException.class,
+            () -> new LogResult(1,-5,
+                Map.of("x",1L), Map.of(200,1L),
+                0.0, Map.of()));
+        assertEquals("averageResponseSize меньше нуля", ex.getMessage());
     }
 
     @Test
     void resourceCounts_IsNull() {
-        //Arrange
-        long totalRequests = 100;
-        double averageResponseSize = 512.5;
-        Map<String, Long> resourceCounts = null;
-        Map<Integer, Long> statusCodeCounts = Map.of(200, 80L, 404, 20L);
-        double percentile = 201.5;
-
-        //Act
-        Exception exception = assertThrows(NullPointerException.class, () -> new LogResult
-            (totalRequests, averageResponseSize, resourceCounts, statusCodeCounts, percentile));
-        //Assert
-        assertEquals("resourceCounts пустой", exception.getMessage());
+        Exception ex = assertThrows(NullPointerException.class,
+            () -> new LogResult(1,10,
+                null, Map.of(200,1L),
+                0.0, Map.of()));
+        assertEquals("resourceCounts пустой", ex.getMessage());
     }
 
     @Test
     void statusCodeCounts_IsNull() {
-        //Arrange
-        long totalRequests = 100;
-        double averageResponseSize = 512.5;
-        Map<String, Long> resourceCounts = Map.of("/index.html", 50L, "/about.html", 25L);
-        Map<Integer, Long> statusCodeCounts = null;
-        double percentile = 201.5;
-
-        //Act
-        Exception exception = assertThrows(NullPointerException.class, () -> new LogResult
-            (totalRequests, averageResponseSize, resourceCounts, statusCodeCounts, percentile));
-        //Assert
-        assertEquals("statusCodeCounts пустой", exception.getMessage());
+        Exception ex = assertThrows(NullPointerException.class,
+            () -> new LogResult(1,10,
+                Map.of("x",1L), null,
+                0.0, Map.of()));
+        assertEquals("statusCodeCounts пустой", ex.getMessage());
     }
 
     @Test
     void percentile_IsNegative() {
-        //Arrange
-        long totalRequests = 100;
-        double averageResponseSize = 512.5;
-        Map<String, Long> resourceCounts = Map.of("/index.html", 50L, "/about.html", 25L);
-        Map<Integer, Long> statusCodeCounts = Map.of(200, 80L, 404, 20L);
-        double percentile = -201.5;
-
-        //Act
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> new LogResult
-            (totalRequests, averageResponseSize, resourceCounts, statusCodeCounts, percentile));
-        //Assert
-        assertEquals("percentile меньше нуля", exception.getMessage());
+        Exception ex = assertThrows(IllegalArgumentException.class,
+            () -> new LogResult(1,10,
+                Map.of("x",1L), Map.of(200,1L),
+                -0.1, Map.of()));
+        assertEquals("percentile меньше нуля", ex.getMessage());
     }
 }
