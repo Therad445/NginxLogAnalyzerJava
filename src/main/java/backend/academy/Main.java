@@ -3,6 +3,11 @@ package backend.academy;
 import backend.academy.loganalyzer.analyzer.DateRangeLogFilter;
 import backend.academy.loganalyzer.analyzer.FieldLogFilter;
 import backend.academy.loganalyzer.analyzer.LogAnalyzer;
+import backend.academy.loganalyzer.anomaly.Anomaly;
+import backend.academy.loganalyzer.anomaly.AnomalyConfigurator;
+import backend.academy.loganalyzer.anomaly.AnomalyService;
+import backend.academy.loganalyzer.anomaly.MetricSnapshot;
+import backend.academy.loganalyzer.anomaly.MetricsAggregator;
 import backend.academy.loganalyzer.config.Config;
 import backend.academy.loganalyzer.parser.NginxLogParser;
 import backend.academy.loganalyzer.reader.Reader;
@@ -12,13 +17,13 @@ import backend.academy.loganalyzer.report.LogReportFormatFactory;
 import backend.academy.loganalyzer.template.LogRecord;
 import backend.academy.loganalyzer.template.LogResult;
 import com.beust.jcommander.JCommander;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
-
 
 @Log4j2
 @UtilityClass
@@ -28,7 +33,7 @@ public class Main {
         JCommander.newBuilder().addObject(config).build().parse(args);
         LogReportFormat formatter = LogReportFormatFactory.getLogReportFormat(config.format());
         LogResult result = getLogResult(config.path(), config.filterField(), config.filterValue(),
-        config.from(), config.to());
+            config.from(), config.to());
         log.info(formatter.format(result));
     }
 
@@ -42,12 +47,22 @@ public class Main {
             if (filterField != null && filterValue != null) {
                 logs = analyzer.applyFilter(logs, new FieldLogFilter(filterField, filterValue));
             }
-
             if (from != null && to != null) {
                 logs = analyzer.applyFilter(logs,
                     new DateRangeLogFilter(LocalDateTime.parse(from), LocalDateTime.parse(to)));
             }
 
+            MetricsAggregator aggregator = new MetricsAggregator(Duration.ofMinutes(1));
+            List<MetricSnapshot> snapshots = aggregator.aggregate(logs);
+
+            AnomalyService anomalySvc = AnomalyConfigurator.defaultService();
+            Map<String, List<Anomaly>> anomalies = anomalySvc.detectAll(snapshots);
+
+            if (!anomalies.isEmpty()) {
+                anomalies.forEach((metric, list) ->
+                    log.warn("⚠ Detected {} anomalies for {} : {}", list.size(), metric, list));
+            }
+            
             long totalRequests = analyzer.countTotalRequests(logs);
             double averageSize = analyzer.averageResponseSize(logs);
             Map<String, Long> resourceCounts = analyzer.countResources(logs);
