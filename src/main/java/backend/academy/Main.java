@@ -62,14 +62,21 @@ public class Main {
                 anomalies.forEach((metric, list) ->
                     log.warn("⚠ Detected {} anomalies for {} : {}", list.size(), metric, list));
             }
-            
+
             long totalRequests = analyzer.countTotalRequests(logs);
             double averageSize = analyzer.averageResponseSize(logs);
             Map<String, Long> resourceCounts = analyzer.countResources(logs);
             Map<Integer, Long> statusCodeCounts = analyzer.countStatusCodes(logs);
             double percentile = analyzer.percentile95ResponseSize(logs);
 
-            return new LogResult(totalRequests, averageSize, resourceCounts, statusCodeCounts, percentile);
+            return new LogResult(
+                totalRequests,
+                averageSize,
+                resourceCounts,
+                statusCodeCounts,
+                percentile,
+                anomalies
+            );
         } catch (Exception e) {
             log.error(e);
         }
