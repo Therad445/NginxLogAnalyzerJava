@@ -18,7 +18,9 @@ import backend.academy.loganalyzer.report.LogReportFormat;
 import backend.academy.loganalyzer.report.LogReportFormatFactory;
 import backend.academy.loganalyzer.template.LogRecord;
 import backend.academy.loganalyzer.template.LogResult;
+import backend.academy.loganalyzer.visual.ChartGenerator;
 import com.beust.jcommander.JCommander;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -41,7 +43,11 @@ public class Main {
         Instant end = Instant.now();
         Duration elapsed = Duration.between(start, end);
         log.info("⏱ Анализ занял: {} мс", elapsed.toMillis());
-        log.info(formatter.format(result));
+        if (result != null) {
+            log.info(formatter.format(result));
+        } else {
+            log.error("⚠ Ошибка анализа: LogResult == null");
+        }
         log.debug("TOKEN = {}", System.getenv("TG_TOKEN"));
         log.debug("CHAT  = {}", System.getenv("TG_CHAT"));
     }
@@ -90,6 +96,13 @@ public class Main {
             Map<String, Long> resourceCounts = analyzer.countResources(logs);
             Map<Integer, Long> statusCodeCounts = analyzer.countStatusCodes(logs);
             double percentile = analyzer.percentile95ResponseSize(logs);
+
+            try {
+                new ChartGenerator().generateTimeSeriesChart(snapshots, "reports/traffic_errors.png");
+                log.info("📊 График сохранён: reports/traffic_errors.png");
+            } catch (IOException e) {
+                log.error("Не удалось сгенерировать график", e);
+            }
 
             AlertManager alert = buildAlertManager();
             if (!anomalies.isEmpty()) {
