@@ -1,8 +1,8 @@
 package backend.academy.loganalyzer.report;
 
 import backend.academy.loganalyzer.template.LogResult;
-import org.junit.jupiter.api.Test;
 import java.util.Map;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -19,7 +19,8 @@ class LogReportFormatTest {
                 return "";
             }
         };
-        Exception exception = assertThrows(NullPointerException.class, () -> logReportFormat.middleLine(result, newLine));
+        Exception exception =
+            assertThrows(NullPointerException.class, () -> logReportFormat.middleLine(result, newLine));
         //Assert
         assertEquals("Переданы пустые переменные", exception.getMessage());
     }
@@ -43,7 +44,8 @@ class LogReportFormatTest {
                 return "";
             }
         };
-        Exception exception = assertThrows(NullPointerException.class, () -> logReportFormat.middleLine(result, newLine));
+        Exception exception =
+            assertThrows(NullPointerException.class, () -> logReportFormat.middleLine(result, newLine));
         //Assert
         assertEquals("Передан пустой элемент переноса", exception.getMessage());
     }
@@ -67,7 +69,8 @@ class LogReportFormatTest {
                 return "";
             }
         };
-        Exception exception = assertThrows(NullPointerException.class, () -> logReportFormat.middleLine(result, newLine));
+        Exception exception =
+            assertThrows(NullPointerException.class, () -> logReportFormat.middleLine(result, newLine));
         //Assert
         assertEquals("Передан пустой элемент переноса", exception.getMessage());
     }

@@ -1,12 +1,11 @@
 package backend.academy.loganalyzer.template;
 
 import backend.academy.loganalyzer.anomaly.Anomaly;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class LogResultTest {
 
@@ -14,29 +13,29 @@ class LogResultTest {
     void LogResultTest_IsValid() {
         long totalRequests = 100;
         double averageResponseSize = 512.5;
-        Map<String,Long> resourceCounts = Map.of("/index.html",50L,"/about.html",25L);
-        Map<Integer,Long> statusCodeCounts = Map.of(200,80L,404,20L);
+        Map<String, Long> resourceCounts = Map.of("/index.html", 50L, "/about.html", 25L);
+        Map<Integer, Long> statusCodeCounts = Map.of(200, 80L, 404, 20L);
         double percentile = 201.5;
-        Map<String,List<Anomaly>> anomalies = Map.of();
+        Map<String, List<Anomaly>> anomalies = Map.of();
 
         LogResult logResult = new LogResult(
             totalRequests, averageResponseSize,
             resourceCounts, statusCodeCounts,
             percentile, anomalies);
 
-        assertEquals(totalRequests,          logResult.totalRequests());
-        assertEquals(averageResponseSize,    logResult.averageResponseSize());
-        assertEquals(resourceCounts,         logResult.resourceCounts());
-        assertEquals(statusCodeCounts,       logResult.statusCodeCounts());
-        assertEquals(percentile,             logResult.percentile());
-        assertEquals(anomalies,              logResult.anomalies());
+        assertEquals(totalRequests, logResult.totalRequests());
+        assertEquals(averageResponseSize, logResult.averageResponseSize());
+        assertEquals(resourceCounts, logResult.resourceCounts());
+        assertEquals(statusCodeCounts, logResult.statusCodeCounts());
+        assertEquals(percentile, logResult.percentile());
+        assertEquals(anomalies, logResult.anomalies());
     }
 
     @Test
     void totalRequests_IsNegative() {
         Exception ex = assertThrows(IllegalArgumentException.class,
             () -> new LogResult(-1, 10,
-                Map.of("x",1L), Map.of(200,1L),
+                Map.of("x", 1L), Map.of(200, 1L),
                 0.0, Map.of()));
         assertEquals("totalRequests меньше нуля", ex.getMessage());
     }
@@ -44,8 +43,8 @@ class LogResultTest {
     @Test
     void averageResponseSize_IsNegative() {
         Exception ex = assertThrows(IllegalArgumentException.class,
-            () -> new LogResult(1,-5,
-                Map.of("x",1L), Map.of(200,1L),
+            () -> new LogResult(1, -5,
+                Map.of("x", 1L), Map.of(200, 1L),
                 0.0, Map.of()));
         assertEquals("averageResponseSize меньше нуля", ex.getMessage());
     }
@@ -53,8 +52,8 @@ class LogResultTest {
     @Test
     void resourceCounts_IsNull() {
         Exception ex = assertThrows(NullPointerException.class,
-            () -> new LogResult(1,10,
-                null, Map.of(200,1L),
+            () -> new LogResult(1, 10,
+                null, Map.of(200, 1L),
                 0.0, Map.of()));
         assertEquals("resourceCounts пустой", ex.getMessage());
     }
@@ -62,8 +61,8 @@ class LogResultTest {
     @Test
     void statusCodeCounts_IsNull() {
         Exception ex = assertThrows(NullPointerException.class,
-            () -> new LogResult(1,10,
-                Map.of("x",1L), null,
+            () -> new LogResult(1, 10,
+                Map.of("x", 1L), null,
                 0.0, Map.of()));
         assertEquals("statusCodeCounts пустой", ex.getMessage());
     }
@@ -71,8 +70,8 @@ class LogResultTest {
     @Test
     void percentile_IsNegative() {
         Exception ex = assertThrows(IllegalArgumentException.class,
-            () -> new LogResult(1,10,
-                Map.of("x",1L), Map.of(200,1L),
+            () -> new LogResult(1, 10,
+                Map.of("x", 1L), Map.of(200, 1L),
                 -0.1, Map.of()));
         assertEquals("percentile меньше нуля", ex.getMessage());
     }

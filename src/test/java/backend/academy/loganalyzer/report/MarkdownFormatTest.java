@@ -1,15 +1,19 @@
 package backend.academy.loganalyzer.report;
 
+import backend.academy.loganalyzer.anomaly.Anomaly;
 import backend.academy.loganalyzer.template.LogResult;
 import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class MarkdownFormatTest {
 
     @Test
     void testFormat_withValidLogResult() {
-        // Arrange
         LogResult result = new LogResult(
             100,
             512.5,
@@ -20,10 +24,8 @@ class MarkdownFormatTest {
         );
         MarkdownFormat formatter = new MarkdownFormat();
 
-        // Act
         String output = formatter.format(result);
 
-        // Assert
         String expected = """
             #### Общая информация
 
@@ -42,13 +44,30 @@ class MarkdownFormatTest {
 
     @Test
     void testFormat_withNullRequests() {
-        // Arrange
         LogResult result = null;
         MarkdownFormat formatter = new MarkdownFormat();
-        //Act
         Exception exception = assertThrows(NullPointerException.class, () -> formatter.format(result));
-        //Assert
         assertEquals("Переданы пустые переменные", exception.getMessage());
     }
-}
 
+    @Test
+    void testFormat_withDetectedAnomalies() {
+        LogResult result = new LogResult(
+            50,
+            250.0,
+            Map.of("/home", 30L),
+            Map.of(200, 50L),
+            123.0,
+            Map.of(
+                "reqs/min", List.of(new Anomaly(Instant.now(), "reqs/min", 300, 100, 2.5)),
+                "errors/sec", List.of(new Anomaly(Instant.now(), "errors/sec", 50, 10, 4.2))
+            )
+        );
+        MarkdownFormat formatter = new MarkdownFormat();
+        String output = formatter.format(result);
+
+        assertTrue(output.contains("* reqs/min — 1 шт."));
+        assertTrue(output.contains("* errors/sec — 1 шт."));
+
+    }
+}

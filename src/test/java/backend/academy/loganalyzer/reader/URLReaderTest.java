@@ -1,10 +1,11 @@
 package backend.academy.loganalyzer.reader;
 
-import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class URLReaderTest {
 
