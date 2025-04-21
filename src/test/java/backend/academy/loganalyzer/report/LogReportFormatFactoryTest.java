@@ -1,9 +1,9 @@
 package backend.academy.loganalyzer.report;
 
 import org.junit.jupiter.api.Test;
-
 import static backend.academy.loganalyzer.report.LogReportFormatFactory.getLogReportFormat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class LogReportFormatFactoryTest {
 

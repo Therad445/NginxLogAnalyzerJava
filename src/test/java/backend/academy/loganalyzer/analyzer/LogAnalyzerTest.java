@@ -1,13 +1,13 @@
 package backend.academy.loganalyzer.analyzer;
 
 import backend.academy.loganalyzer.template.LogRecord;
-import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class LogAnalyzerTest {
 
