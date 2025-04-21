@@ -16,11 +16,23 @@ public record LogResult(
     Map<String, List<Anomaly>> anomalies   // ← новое поле
 ) {
     public LogResult {
-        if (totalRequests < 0) throw new IllegalArgumentException("totalRequests меньше нуля");
-        if (averageResponseSize < 0) throw new IllegalArgumentException("averageResponseSize меньше нуля");
-        if (resourceCounts == null) throw new NullPointerException("resourceCounts пустой");
-        if (statusCodeCounts == null) throw new NullPointerException("statusCodeCounts пустой");
-        if (percentile < 0) throw new IllegalArgumentException("percentile меньше нуля");
-        if (anomalies == null) anomalies = Map.of();   // допускаем «нет аномалий»
+        if (totalRequests < 0) {
+            throw new IllegalArgumentException("totalRequests меньше нуля");
+        }
+        if (averageResponseSize < 0) {
+            throw new IllegalArgumentException("averageResponseSize меньше нуля");
+        }
+        if (resourceCounts == null) {
+            throw new NullPointerException("resourceCounts пустой");
+        }
+        if (statusCodeCounts == null) {
+            throw new NullPointerException("statusCodeCounts пустой");
+        }
+        if (percentile < 0) {
+            throw new IllegalArgumentException("percentile меньше нуля");
+        }
+        if (anomalies == null) {
+            anomalies = Map.of();
+        }
     }
 }
