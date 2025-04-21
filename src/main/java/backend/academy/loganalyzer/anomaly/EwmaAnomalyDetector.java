@@ -37,7 +37,7 @@ public class EwmaAnomalyDetector implements AnomalyDetector {
             if (sigma == 0) {
                 continue;
             }
-            if (x > mu + k * sigma) {
+            if (Math.abs(x - mu) > k * sigma) {
                 res.add(new Anomaly(history.get(i).timestamp(), metricName, x, mu + k * sigma, (x - mu) / sigma));
             }
         }

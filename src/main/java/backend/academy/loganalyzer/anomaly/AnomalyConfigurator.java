@@ -1,5 +1,6 @@
 package backend.academy.loganalyzer.anomaly;
 
+import backend.academy.loganalyzer.config.Config;
 import java.util.List;
 
 public class AnomalyConfigurator {
@@ -7,13 +8,13 @@ public class AnomalyConfigurator {
         AnomalyDetector reqSpike = new ZScoreAnomalyDetector(
             "reqs/min",
             ms -> (double) ms.requests(),
-            30,
-            3.0
+            (int) (Config.getAggregationWindow().getSeconds() / Config.getAggregationWindow().getSeconds()),
+            Config.getZThreshold()
         );
 
         AnomalyDetector errorRate =
             new EwmaAnomalyDetector("errorRate", ms -> ms.requests() == 0 ? 0 : (double) ms.errors() / ms.requests(),
-                0.3, 3.0);
+                0.3, 1.0);
         return new AnomalyService(List.of(reqSpike, errorRate));
     }
 }
