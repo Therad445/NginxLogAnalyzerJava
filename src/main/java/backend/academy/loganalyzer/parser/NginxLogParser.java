@@ -1,7 +1,10 @@
 package backend.academy.loganalyzer.parser;
 
 import backend.academy.loganalyzer.template.LogRecord;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,6 +54,10 @@ public class NginxLogParser {
             logRecord.bodyBytesSent(Integer.parseInt(matcher.group("bytes")));
             logRecord.userAgent(matcher.group("agent"));
             logRecord.method(matcher.group("method"));
+            String timeStr = matcher.group("time");
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH);
+            ZonedDateTime zdt = ZonedDateTime.parse(timeStr, fmt);
+            logRecord.timestamp(zdt.toLocalDateTime());
             return Optional.of(logRecord);
         }
         return Optional.empty();
