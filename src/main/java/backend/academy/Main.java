@@ -20,6 +20,7 @@ import backend.academy.loganalyzer.template.LogRecord;
 import backend.academy.loganalyzer.template.LogResult;
 import backend.academy.loganalyzer.visual.ChartGenerator;
 import com.beust.jcommander.JCommander;
+import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -58,9 +59,15 @@ public class Main {
         if (tok != null && chat != null && !tok.isBlank() && !chat.isBlank()) {
             return new TelegramAlertManager(tok, chat);
         }
-        return text -> {
+        return new AlertManager() {
+            @Override
+            public void send(String text) { }
+
+            @Override
+            public void sendImage(File image, String caption) { }
         };
     }
+
 
     private static LogResult getLogResult(String path, String filterField, String filterValue, String from, String to) {
         NginxLogParser parser = new NginxLogParser();
@@ -97,14 +104,18 @@ public class Main {
             Map<Integer, Long> statusCodeCounts = analyzer.countStatusCodes(logs);
             double percentile = analyzer.percentile95ResponseSize(logs);
 
+            AlertManager alert = buildAlertManager();
             try {
                 new ChartGenerator().generateTimeSeriesChart(snapshots, "reports/traffic_errors.png");
                 log.info("📊 График сохранён: reports/traffic_errors.png");
+                File chart = new File("reports/traffic_errors.png");
+                if (chart.exists()) {
+                    alert.sendImage(chart, "📊 График трафика и ошибок");
+                }
             } catch (IOException e) {
                 log.error("Не удалось сгенерировать график", e);
             }
 
-            AlertManager alert = buildAlertManager();
             if (!anomalies.isEmpty()) {
                 StringBuilder msg = new StringBuilder("*NginxLogAnalyzer*: обнаружены аномалии\n");
                 anomalies.forEach((m, l) -> msg.append("• ").append(m).append(" — ").append(l.size()).append(" шт.\n"));
