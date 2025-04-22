@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,7 +21,8 @@ class MarkdownFormatTest {
             Map.of("/index.html", 50L, "/about.html", 25L),
             Map.of(200, 80L, 404, 20L),
             201.5,
-            Map.of()
+            Map.of(),
+            Set.of()
         );
         MarkdownFormat formatter = new MarkdownFormat();
 
@@ -61,7 +63,8 @@ class MarkdownFormatTest {
             Map.of(
                 "reqs/min", List.of(new Anomaly(Instant.now(), "reqs/min", 300, 100, 2.5)),
                 "errors/sec", List.of(new Anomaly(Instant.now(), "errors/sec", 50, 10, 4.2))
-            )
+            ),
+            Set.of()
         );
         MarkdownFormat formatter = new MarkdownFormat();
         String output = formatter.format(result);

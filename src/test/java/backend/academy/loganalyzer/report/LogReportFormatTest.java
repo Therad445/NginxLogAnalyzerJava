@@ -2,6 +2,7 @@ package backend.academy.loganalyzer.report;
 
 import backend.academy.loganalyzer.template.LogResult;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,7 +35,8 @@ class LogReportFormatTest {
             Map.of("/index.html", 50L, "/about.html", 25L),
             Map.of(200, 80L, 404, 20L),
             201.5,
-            Map.of()
+            Map.of(),
+            Set.of()
         );
         String newLine = null;
         // Act
@@ -59,7 +61,8 @@ class LogReportFormatTest {
             Map.of("/index.html", 50L, "/about.html", 25L),
             Map.of(200, 80L, 404, 20L),
             201.5,
-            Map.of()
+            Map.of(),
+            Set.of()
         );
         String newLine = "";
         // Act

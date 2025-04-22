@@ -3,6 +3,7 @@ package backend.academy.loganalyzer.template;
 import backend.academy.loganalyzer.anomaly.Anomaly;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * LogResult - класс для работы с данными LogAnalyzer и формирования финального отчета.
@@ -13,8 +14,8 @@ public record LogResult(
     Map<String, Long> resourceCounts,
     Map<Integer, Long> statusCodeCounts,
     double percentile,
-    Map<String, List<Anomaly>> anomalies   // ← новое поле
-) {
+    Map<String, List<Anomaly>> anomalies,
+    Set<String> suspiciousIps) {
     public LogResult {
         if (totalRequests < 0) {
             throw new IllegalArgumentException("totalRequests меньше нуля");
