@@ -91,7 +91,7 @@ public class Main {
         };
     }
 
-    private static LogResult getLogResult(
+    public static LogResult getLogResult(
         Config config,
         String path,
         String filterField,

@@ -10,6 +10,7 @@ import lombok.Getter;
 @Getter public class Config {
     private static final int DEFAULT_WINDOW_SECONDS = 20;
     private static final double DEFAULT_Z_THRESHOLD = 3.0;
+
     @Parameter(names = "--path", description = "Путь к распаложению файлов", required = true)
     private String path;
     @Parameter(names = "--from", description = "Начальная дата в формате ISO8601")
@@ -22,7 +23,6 @@ import lombok.Getter;
     private String filterField;
     @Parameter(names = "--filter-value", description = "Переменная фильтрации \"Mozilla\" или \"GET\"")
     private String filterValue;
-
     @Parameter(names = "--export-csv", description = "Путь для сохранения CSV")
     private String exportCsv;
 
@@ -52,6 +52,14 @@ import lombok.Getter;
 
     public String filterIp() {
         return filterIp;
+    }
+
+    public void path(String path) {
+        this.path = path;
+    }
+
+    public void format(String format) {
+        this.format = format;
     }
 }
 

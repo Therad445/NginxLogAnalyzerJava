@@ -44,7 +44,6 @@ class AsciidocFormatTest {
            == Подозрительные IP
 
            * Не обнаружены
-
            """;
         assertEquals(expected, output);
     }
