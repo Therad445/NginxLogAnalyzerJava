@@ -23,6 +23,11 @@ public class MarkdownFormat implements LogReportFormat {
                 sb.append(String.format("* %s — %d шт.\n", metric, list.size())));
         }
 
+        if (result.suspiciousIps() != null && !result.suspiciousIps().isEmpty()) {
+            sb.append("\n#### Подозрительные IP\n\n");
+            result.suspiciousIps().forEach(ip -> sb.append("* ").append(ip).append("\n"));
+        }
+
         return sb.toString();
     }
 }
