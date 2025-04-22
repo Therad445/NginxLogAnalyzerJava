@@ -41,27 +41,29 @@ public class Main {
         JCommander.newBuilder().addObject(config).build().parse(args);
         LogReportFormat formatter = LogReportFormatFactory.getLogReportFormat(config.format());
         Instant start = Instant.now();
-        LogResult result = getLogResult(config.path(), config.filterField(), config.filterValue(),
+        LogResult result = getLogResult(config, config.path(), config.filterField(), config.filterValue(),
             config.from(), config.to());
         Instant end = Instant.now();
         Duration elapsed = Duration.between(start, end);
         log.info("⏱ Анализ занял: {} мс", elapsed.toMillis());
-        if (result != null) {
-            log.info(formatter.format(result));
-        } else {
-            log.error("⚠ Ошибка анализа: LogResult == null");
-        }
         try {
-            if (config.exportJson() != null) {
-                Path p = Path.of(config.exportJson());
-                ResultExporter.toJson(result, p);
-                log.info("💾 Результат сохранён в JSON: {}", p);
+            if (result != null) {
+                log.info(formatter.format(result));
+
+                if (config.exportJson() != null) {
+                    Path p = Path.of(config.exportJson());
+                    ResultExporter.toJson(result, p);
+                    log.info("💾 Результат сохранён в JSON: {}", p);
+                }
+                if (config.exportCsv() != null) {
+                    Path p = Path.of(config.exportCsv());
+                    ResultExporter.toCsv(result, p);
+                    log.info("💾 Результат сохранён в CSV: {}", p);
+                }
+            } else {
+                log.error("⚠ Ошибка анализа: LogResult == null (возможно, после фильтрации не осталось записей)");
             }
-            if (config.exportCsv() != null) {
-                Path p = Path.of(config.exportCsv());
-                ResultExporter.toCsv(result, p);
-                log.info("💾 Результат сохранён в CSV: {}", p);
-            }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -86,8 +88,7 @@ public class Main {
             }
         };
     }
-
-    private static LogResult getLogResult(String path, String filterField, String filterValue, String from, String to) {
+    private static LogResult getLogResult(Config config, String path, String filterField, String filterValue, String from, String to) {
         NginxLogParser parser = new NginxLogParser();
         LogAnalyzer analyzer = new LogAnalyzer();
         try {
@@ -97,9 +98,17 @@ public class Main {
             if (filterField != null && filterValue != null) {
                 logs = analyzer.applyFilter(logs, new FieldLogFilter(filterField, filterValue));
             }
+            if (config.filterIp() != null) {
+                logs = analyzer.applyFilter(logs, new FieldLogFilter("remoteAddr", config.filterIp()));
+            }
             if (from != null && to != null) {
                 logs = analyzer.applyFilter(logs,
                     new DateRangeLogFilter(LocalDateTime.parse(from), LocalDateTime.parse(to)));
+            }
+
+            if (logs.isEmpty()) {
+                log.warn("⚠ После фильтрации логи пусты. Прерываем анализ.");
+                return null;
             }
 
             MetricsAggregator aggregator = new MetricsAggregator(Duration.ofSeconds(20));

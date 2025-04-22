@@ -23,24 +23,24 @@ class ConfigTest {
     }
 
     @Test
-    void getAggregationWindow_DefaultsTo20Seconds() {
-        assertEquals(Duration.ofSeconds(20), Config.getAggregationWindow());
+    void aggregationWindow_DefaultsTo20Seconds() {
+        assertEquals(Duration.ofSeconds(20), Config.aggregationWindow());
     }
 
     @Test
-    void getAggregationWindow_RespectsSystemProperty() {
+    void aggregationWindow_RespectsSystemProperty() {
         System.setProperty("windowSeconds", "45");
-        assertEquals(Duration.ofSeconds(45), Config.getAggregationWindow());
+        assertEquals(Duration.ofSeconds(45), Config.aggregationWindow());
     }
 
     @Test
-    void getZThreshold_DefaultsTo3() {
-        assertEquals(3.0, Config.getZThreshold());
+    void zThreshold_DefaultsTo3() {
+        assertEquals(3.0, Config.zThreshold());
     }
 
     @Test
-    void getZThreshold_RespectsSystemProperty() {
+    void zThreshold_RespectsSystemProperty() {
         System.setProperty("zThreshold", "2.5");
-        assertEquals(2.5, Config.getZThreshold());
+        assertEquals(2.5, Config.zThreshold());
     }
 }

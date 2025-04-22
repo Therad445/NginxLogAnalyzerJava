@@ -8,8 +8,8 @@ public class AnomalyConfigurator {
         AnomalyDetector reqSpike = new ZScoreAnomalyDetector(
             "reqs/min",
             ms -> (double) ms.requests(),
-            (int) (Config.getAggregationWindow().getSeconds() / Config.getAggregationWindow().getSeconds()),
-            Config.getZThreshold()
+            (int) (Config.aggregationWindow().getSeconds() / Config.aggregationWindow().getSeconds()),
+            Config.zThreshold()
         );
 
         AnomalyDetector errorRate =
