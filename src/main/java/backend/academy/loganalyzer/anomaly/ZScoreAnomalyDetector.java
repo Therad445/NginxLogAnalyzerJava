@@ -46,7 +46,7 @@ public class ZScoreAnomalyDetector implements AnomalyDetector {
                 if (x != mean) {
                     anomalies.add(
                         new Anomaly(history.get(i).timestamp(), metricName, x, mean, Double.POSITIVE_INFINITY));
-                    log.warn("⚠ Anomaly detected (zero std): {} → x = {}, mean = {}", metricName, x, mean);
+                    log.warn("⚠ Обнаружена аномалия (zero std): {} → x = {}, mean = {}", metricName, x, mean);
                 }
                 continue;
             }
@@ -55,7 +55,7 @@ public class ZScoreAnomalyDetector implements AnomalyDetector {
 
             if (z >= zThreshold) {
                 anomalies.add(new Anomaly(history.get(i).timestamp(), metricName, x, mean + zThreshold * std, z));
-                log.warn("⚠ Anomaly detected: {} (z = {})", metricName, z);
+                log.warn("⚠ Обнаружена аномалия: {} (z = {})", metricName, z);
             }
         }
         return anomalies;
