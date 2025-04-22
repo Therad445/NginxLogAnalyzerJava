@@ -22,6 +22,7 @@ import backend.academy.loganalyzer.template.LogRecord;
 import backend.academy.loganalyzer.template.LogResult;
 import backend.academy.loganalyzer.util.ResultExporter;
 import backend.academy.loganalyzer.visual.ChartGenerator;
+import backend.academy.loganalyzer.visual.PdfReportGenerator;
 import com.beust.jcommander.JCommander;
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +66,13 @@ public class Main {
                     ResultExporter.toCsv(result, p);
                     log.info("💾 Сохранено в CSV: {}", p);
                 }
+                try {
+                    new PdfReportGenerator().generate(result, "output/report.pdf");
+                    log.info("📄 PDF-отчёт сохранён: output/report.pdf");
+                } catch (Exception e) {
+                    log.warn("❌ Не удалось сгенерировать PDF-отчёт", e);
+                }
+
             } else {
                 log.error("⚠ Ошибка анализа: LogResult == null (возможно, после фильтрации не осталось записей)");
             }
