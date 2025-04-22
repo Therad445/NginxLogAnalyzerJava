@@ -4,6 +4,7 @@ import backend.academy.loganalyzer.alert.AlertManager;
 import backend.academy.loganalyzer.alert.TelegramAlertManager;
 import backend.academy.loganalyzer.analyzer.DateRangeLogFilter;
 import backend.academy.loganalyzer.analyzer.FieldLogFilter;
+import backend.academy.loganalyzer.analyzer.IpAnalyzer;
 import backend.academy.loganalyzer.analyzer.LogAnalyzer;
 import backend.academy.loganalyzer.anomaly.Anomaly;
 import backend.academy.loganalyzer.anomaly.AnomalyConfigurator;
@@ -110,6 +111,23 @@ public class Main {
                 log.warn("⚠ После фильтрации логи пусты. Прерываем анализ.");
                 return null;
             }
+
+            IpAnalyzer ipAnalyzer = new IpAnalyzer();
+            Map<String, Long> requestsPerIp = ipAnalyzer.countRequestsPerIp(logs);
+            Map<String, Long> errorsPerIp = ipAnalyzer.countErrorsPerIp(logs);
+
+            log.info("📌 Топ 5 IP-адресов по количеству запросов:");
+            requestsPerIp.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(5)
+                .forEach(e -> log.info("{} → {} запросов", e.getKey(), e.getValue()));
+
+            log.info("📌 Топ 5 IP-адресов по количеству ошибок:");
+            errorsPerIp.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(5)
+                .forEach(e -> log.info("{} → {} ошибок", e.getKey(), e.getValue()));
+
 
             MetricsAggregator aggregator = new MetricsAggregator(Duration.ofSeconds(20));
             List<MetricSnapshot> snapshots = aggregator.aggregate(logs);
