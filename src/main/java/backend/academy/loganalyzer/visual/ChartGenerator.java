@@ -1,16 +1,14 @@
 package backend.academy.loganalyzer.visual;
 
 import backend.academy.loganalyzer.anomaly.MetricSnapshot;
-import org.knowm.xchart.XYChart;
-import org.knowm.xchart.XYChartBuilder;
-import org.knowm.xchart.style.Styler;
-
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.knowm.xchart.XYChart;
+import org.knowm.xchart.XYChartBuilder;
+import org.knowm.xchart.style.Styler;
 
 public class ChartGenerator {
 

@@ -29,7 +29,7 @@ public class MetricsAggregator {
     }
 
     private Instant truncate(LogRecord rec) {
-        LocalDateTime ldt = LocalDateTime.from(rec.timestamp());
+        LocalDateTime ldt = rec.timestamp();
         if (ldt == null) {
             ldt = LocalDateTime.now();
         }
