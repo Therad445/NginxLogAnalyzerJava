@@ -4,9 +4,6 @@ import backend.academy.loganalyzer.alert.AlertManager;
 import backend.academy.loganalyzer.config.Config;
 import com.beust.jcommander.JCommander;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class MainTest {
@@ -35,9 +32,12 @@ class MainTest {
     @Test
     void getLogResult_returnsNullIfInvalidPath() throws Exception {
         var method = Main.class.getDeclaredMethod("getLogResult",
-            String.class, String.class, String.class, String.class, String.class);
+            Config.class, String.class, String.class, String.class, String.class, String.class);
+
         method.setAccessible(true);
-        Object result = method.invoke(null, "bad_path", null, null, null, null);
+        Config dummy = new Config(); // пустой конфиг
+        Object result = method.invoke(null, dummy, "bad_path", null, null, null, null);
         assertNull(result);
     }
+
 }

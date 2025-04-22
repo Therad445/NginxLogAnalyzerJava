@@ -21,8 +21,10 @@ public class FieldLogFilter implements LogFilter {
                 case "agent" -> log.userAgent().startsWith(fieldValue.replace("*", ""));
                 case "status" -> String.valueOf(log.status()).equals(fieldValue);
                 case "request" -> log.request().contains(fieldValue);
+                case "remoteAddr" -> log.remoteAddr().equals(fieldValue); // ← ДОБАВЛЕНО
                 default -> false;
             })
             .collect(Collectors.toList());
     }
+
 }

@@ -23,29 +23,35 @@ import lombok.Getter;
     @Parameter(names = "--filter-value", description = "Переменная фильтрации \"Mozilla\" или \"GET\"")
     private String filterValue;
 
-    public String getExportCsv() {
-        return exportCsv;
-    }
-
-    public String getExportJson() {
-        return exportJson;
-    }
-
-    @Parameter(names="--export-csv", description="Путь для сохранения CSV")
+    @Parameter(names = "--export-csv", description = "Путь для сохранения CSV")
     private String exportCsv;
 
-    @Parameter(names="--export-json", description="Путь для сохранения JSON")
+    @Parameter(names = "--export-json", description = "Путь для сохранения JSON")
     private String exportJson;
 
+    @Parameter(names = "--filter-ip", description = "Фильтрация по IP-адресу (remoteAddr)")
+    private String filterIp;
 
-    public static Duration getAggregationWindow() {
+    public static Duration aggregationWindow() {
         String v = System.getProperty("windowSeconds");
         return Duration.ofSeconds(v != null ? Integer.parseInt(v) : DEFAULT_WINDOW_SECONDS);
     }
 
-    public static double getZThreshold() {
+    public static double zThreshold() {
         String v = System.getProperty("zThreshold");
         return v != null ? Double.parseDouble(v) : DEFAULT_Z_THRESHOLD;
+    }
+
+    public String exportCsv() {
+        return exportCsv;
+    }
+
+    public String exportJson() {
+        return exportJson;
+    }
+
+    public String filterIp() {
+        return filterIp;
     }
 }
 
