@@ -18,10 +18,12 @@ import backend.academy.loganalyzer.report.LogReportFormat;
 import backend.academy.loganalyzer.report.LogReportFormatFactory;
 import backend.academy.loganalyzer.template.LogRecord;
 import backend.academy.loganalyzer.template.LogResult;
+import backend.academy.loganalyzer.util.ResultExporter;
 import backend.academy.loganalyzer.visual.ChartGenerator;
 import com.beust.jcommander.JCommander;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -49,6 +51,21 @@ public class Main {
         } else {
             log.error("⚠ Ошибка анализа: LogResult == null");
         }
+        try {
+            if (config.exportJson() != null) {
+                Path p = Path.of(config.exportJson());
+                ResultExporter.toJson(result, p);
+                log.info("💾 Результат сохранён в JSON: {}", p);
+            }
+            if (config.exportCsv() != null) {
+                Path p = Path.of(config.exportCsv());
+                ResultExporter.toCsv(result, p);
+                log.info("💾 Результат сохранён в CSV: {}", p);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         log.debug("TOKEN = {}", System.getenv("TG_TOKEN"));
         log.debug("CHAT  = {}", System.getenv("TG_CHAT"));
     }
@@ -61,13 +78,14 @@ public class Main {
         }
         return new AlertManager() {
             @Override
-            public void send(String text) { }
+            public void send(String text) {
+            }
 
             @Override
-            public void sendImage(File image, String caption) { }
+            public void sendImage(File image, String caption) {
+            }
         };
     }
-
 
     private static LogResult getLogResult(String path, String filterField, String filterValue, String from, String to) {
         NginxLogParser parser = new NginxLogParser();

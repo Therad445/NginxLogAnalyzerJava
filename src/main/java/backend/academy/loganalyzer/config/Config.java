@@ -23,6 +23,21 @@ import lombok.Getter;
     @Parameter(names = "--filter-value", description = "Переменная фильтрации \"Mozilla\" или \"GET\"")
     private String filterValue;
 
+    public String getExportCsv() {
+        return exportCsv;
+    }
+
+    public String getExportJson() {
+        return exportJson;
+    }
+
+    @Parameter(names="--export-csv", description="Путь для сохранения CSV")
+    private String exportCsv;
+
+    @Parameter(names="--export-json", description="Путь для сохранения JSON")
+    private String exportJson;
+
+
     public static Duration getAggregationWindow() {
         String v = System.getProperty("windowSeconds");
         return Duration.ofSeconds(v != null ? Integer.parseInt(v) : DEFAULT_WINDOW_SECONDS);
