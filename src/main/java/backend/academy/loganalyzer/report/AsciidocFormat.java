@@ -26,6 +26,15 @@ public class AsciidocFormat implements LogReportFormat {
                 sb.append(String.format("* %s — %d шт.%s", metric, list.size(), nl)));
         }
 
+        /* ---- ПОДОЗРИТЕЛЬНЫЕ IP ---- */
+        sb.append("\n== Подозрительные IP\n\n");
+        if (result.suspiciousIps() == null || result.suspiciousIps().isEmpty()) {
+            sb.append("* Не обнаружены").append(nl);
+        } else {
+            result.suspiciousIps().forEach(ip ->
+                sb.append("* ").append(ip).append(nl));
+        }
+
         return sb.toString();
     }
 }
