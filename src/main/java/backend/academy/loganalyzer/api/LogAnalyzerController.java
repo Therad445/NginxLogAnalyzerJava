@@ -3,6 +3,7 @@ package backend.academy.loganalyzer.api;
 import backend.academy.loganalyzer.config.Config;
 import backend.academy.loganalyzer.template.LogResult;
 import backend.academy.Main;
+import backend.academy.loganalyzer.visual.PdfReportGenerator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -70,6 +71,54 @@ public class LogAnalyzerController {
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping(value = "/markdown", produces = "text/markdown")
+    public ResponseEntity<String> analyzeToMarkdown(@RequestParam("file") MultipartFile file) {
+        try {
+            Path temp = Files.createTempFile("nginx-", ".log");
+            file.transferTo(temp);
+
+            Config config = new Config();
+            config.path(temp.toAbsolutePath().toString());
+            config.format("markdown");
+
+            LogResult result = Main.getLogResult(config, config.path(), null, null, null, null);
+            if (result == null) return ResponseEntity.badRequest().build();
+
+            String markdown = backend.academy.loganalyzer.report.LogReportFormatFactory
+                .getLogReportFormat("markdown")
+                .format(result);
+
+            return ResponseEntity.ok(markdown);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/ping")
+    public String ping() {
+        return "✅ NginxLogAnalyzer API работает";
+    }
+
+    @PostMapping("/telegram")
+    public ResponseEntity<String> analyzeAndSendToTelegram(@RequestParam("file") MultipartFile file) {
+        try {
+            Path temp = Files.createTempFile("log-", ".log");
+            file.transferTo(temp);
+
+            Config config = new Config();
+            config.path(temp.toAbsolutePath().toString());
+            config.format("markdown");
+
+            LogResult result = Main.getLogResult(config, config.path(), null, null, null, null);
+            return result == null
+                ? ResponseEntity.badRequest().body("Анализ не выполнен")
+                : ResponseEntity.ok("Отчёт отправлен в Telegram");
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Ошибка анализа: " + e.getMessage());
         }
     }
 
