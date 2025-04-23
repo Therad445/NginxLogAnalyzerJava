@@ -55,7 +55,7 @@ public class PdfReportGenerator {
         }
 
         // График
-        String graphPath = "reports/traffic_errors.png";
+        String graphPath = "src/main/resources/static/traffic_errors.png";
         var img = Image.getInstance(graphPath);
         img.scaleToFit(500, 300);
         doc.add(new Paragraph("\n"));

@@ -32,7 +32,12 @@ public class ChartGenerator {
         chart.addSeries("reqs/min", times, reqs);
         chart.addSeries("errorRate", times, errs);
 
-        new File(outputPath).getParentFile().mkdirs();
+        File file = new File(outputPath);
+        File parent = file.getParentFile();
+        if (parent != null) {
+            parent.mkdirs();
+        }
+
         org.knowm.xchart.BitmapEncoder.saveBitmap(chart, outputPath, org.knowm.xchart.BitmapEncoder.BitmapFormat.PNG);
     }
 }

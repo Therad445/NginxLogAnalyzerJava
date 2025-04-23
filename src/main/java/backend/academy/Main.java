@@ -181,7 +181,7 @@ public class Main {
 
             // График
             try {
-                String pathToChart = "reports/traffic_errors.png";
+                String pathToChart = "src/main/resources/static/traffic_errors.png";
                 new ChartGenerator().generateTimeSeriesChart(snapshots, pathToChart);
                 File chart = new File(pathToChart);
                 if (chart.exists()) {

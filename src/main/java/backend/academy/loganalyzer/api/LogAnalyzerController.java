@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -85,7 +86,9 @@ public class LogAnalyzerController {
             config.format("markdown");
 
             LogResult result = Main.getLogResult(config, config.path(), null, null, null, null);
-            if (result == null) return ResponseEntity.badRequest().build();
+            if (result == null) {
+                return ResponseEntity.badRequest().build();
+            }
 
             String markdown = backend.academy.loganalyzer.report.LogReportFormatFactory
                 .getLogReportFormat("markdown")
@@ -120,6 +123,23 @@ public class LogAnalyzerController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Ошибка анализа: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/")
+    public String index() {
+        return "index.html";
+    }
+
+    @GetMapping("/chart")
+    public ResponseEntity<byte[]> getChart() throws IOException {
+        Path chart = Path.of("src/main/resources/static/traffic_errors.png");
+        if (!Files.exists(chart)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+            .header("Content-Type", "image/png")
+            .body(Files.readAllBytes(chart));
     }
 
 }
