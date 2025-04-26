@@ -1,9 +1,13 @@
 package backend.academy.loganalyzer.visual;
 
 import backend.academy.loganalyzer.template.LogResult;
-import com.lowagie.text.*;
+import com.lowagie.text.Document;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Image;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Table;
 import com.lowagie.text.pdf.PdfWriter;
-
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
