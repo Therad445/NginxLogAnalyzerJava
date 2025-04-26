@@ -1,16 +1,19 @@
 package backend.academy.loganalyzer.api;
 
+import backend.academy.Main;
 import backend.academy.loganalyzer.config.Config;
 import backend.academy.loganalyzer.template.LogResult;
-import backend.academy.Main;
 import backend.academy.loganalyzer.visual.PdfReportGenerator;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/analyze")
