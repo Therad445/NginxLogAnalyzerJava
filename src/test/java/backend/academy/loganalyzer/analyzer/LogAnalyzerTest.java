@@ -15,7 +15,7 @@ class LogAnalyzerTest {
 
     @Test
     public void testCountResources() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.request("/home");
         log1.remoteAddr("192.168.1.1");
@@ -54,10 +54,8 @@ class LogAnalyzerTest {
 
         List<LogRecord> logs = Arrays.asList(log1, log2, log3);
 
-        // Act
         Map<String, Long> result = logAnalyzer.countResources(logs);
 
-        // Assert
         assertEquals(2, result.size());
         assertEquals(2, result.get("/home"));
         assertEquals(1, result.get("/login"));
@@ -65,7 +63,7 @@ class LogAnalyzerTest {
 
     @Test
     public void testCountStatusCodes() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.request("/home");
         log1.remoteAddr("192.168.1.1");
@@ -92,10 +90,8 @@ class LogAnalyzerTest {
 
         List<LogRecord> logs = Arrays.asList(log1, log2, log1);
 
-        // Act
         Map<Integer, Long> result = logAnalyzer.countStatusCodes(logs);
 
-        // Assert
         assertEquals(2, result.size());
         assertEquals(2, result.get(200));
         assertEquals(1, result.get(404));
@@ -103,7 +99,7 @@ class LogAnalyzerTest {
 
     @Test
     public void testAverageResponseSize() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.request("/home");
         log1.remoteAddr("192.168.1.1");
@@ -130,16 +126,14 @@ class LogAnalyzerTest {
 
         List<LogRecord> logs = Arrays.asList(log1, log2);
 
-        // Act
         double result = logAnalyzer.averageResponseSize(logs);
 
-        // Assert
         assertEquals(1250.0, result, 0.1);
     }
 
     @Test
     public void testCountTotalRequests() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.request("/home");
         log1.remoteAddr("192.168.1.1");
@@ -166,16 +160,14 @@ class LogAnalyzerTest {
 
         List<LogRecord> logs = Arrays.asList(log1, log2);
 
-        // Act
         long result = logAnalyzer.countTotalRequests(logs);
 
-        // Assert
         assertEquals(2, result);
     }
 
     @Test
     public void testApplyFilter() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.request("/home");
         log1.remoteAddr("192.168.1.1");
@@ -206,16 +198,14 @@ class LogAnalyzerTest {
             .filter(log -> log.status() == 200)
             .toList();
 
-        // Act
         List<LogRecord> result = logAnalyzer.applyFilter(logs, filter);
 
-        // Assert
         assertEquals(2, result.size());
     }
 
     @Test
     public void testPercentile95ResponseSize() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.request("/home");
         log1.remoteAddr("192.168.1.1");
@@ -254,38 +244,32 @@ class LogAnalyzerTest {
 
         List<LogRecord> logs = Arrays.asList(log1, log2, log3);
 
-        // Act
         double result = logAnalyzer.percentile95ResponseSize(logs);
 
-        // Assert
         assertEquals(2000.0, result, 0.1);
     }
 
     @Test
     public void testPercentile95WithEmptyList() {
-        // Arrange
+
         List<LogRecord> logs = Collections.emptyList();
         LogAnalyzer analyzer = new LogAnalyzer();
 
-        // Act
         double result = analyzer.percentile95ResponseSize(logs);
 
-        // Assert
         assertEquals(0.0, result);
     }
 
     @Test
     public void testPercentile95WithOneElement() {
-        // Arrange
+
         LogRecord log = new LogRecord();
         log.bodyBytesSent(500L);
         List<LogRecord> logs = List.of(log);
         LogAnalyzer analyzer = new LogAnalyzer();
 
-        // Act
         double result = analyzer.percentile95ResponseSize(logs);
 
-        // Assert
         assertEquals(500.0, result);
     }
 }

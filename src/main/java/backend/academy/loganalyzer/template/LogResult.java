@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * LogResult - класс для работы с данными LogAnalyzer и формирования финального отчета.
- */
 public record LogResult(
     long totalRequests,
     double averageResponseSize,

@@ -26,7 +26,7 @@ public class TelegramAlertManager implements AlertManager {
     @Override
     public void send(String text) {
         String markdownText = text
-            .replace("_", "\\_")   // экранируем спецсимволы
+            .replace("_", "\\_")
             .replace("*", "\\*")
             .replace("[", "\\[")
             .replace("]", "\\]")

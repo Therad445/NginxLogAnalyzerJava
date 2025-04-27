@@ -12,9 +12,6 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-/**
- * Собирает метрики по фиксированным окнам и умеет возвращать историю.
- */
 public class MetricsAggregator {
     private final Duration window;
     private final int chartEveryN;
@@ -29,7 +26,6 @@ public class MetricsAggregator {
         this.chartEveryN = chartEveryN > 0 ? chartEveryN : 5;
     }
 
-    /** Batch-режим: всё за раз. */
     public List<MetricSnapshot> aggregate(List<LogRecord> records) {
         if (records.isEmpty()) {
             return List.of();
@@ -42,7 +38,6 @@ public class MetricsAggregator {
             .collect(Collectors.toList());
     }
 
-    /** Streaming-режим: кладём одну запись, возвращаем историю до текущего момента. */
     public synchronized List<MetricSnapshot> addAndAggregate(LogRecord rec) {
         Instant win = truncateToWindow(rec);
         if (currentWindowEnd == null) {
@@ -51,7 +46,6 @@ public class MetricsAggregator {
         if (win.equals(currentWindowEnd)) {
             buffer.add(rec);
         } else {
-            // закрываем окно
             history.add(toSnapshot(currentWindowEnd, buffer));
             windowsSinceChart++;
             buffer.clear();
@@ -61,7 +55,6 @@ public class MetricsAggregator {
         return List.copyOf(history);
     }
 
-    /** True, когда пришло достаточно окон, чтобы пересоздать график. */
     public synchronized boolean shouldEmitChart() {
         if (windowsSinceChart >= chartEveryN) {
             windowsSinceChart = 0;
@@ -81,10 +74,6 @@ public class MetricsAggregator {
     private MetricSnapshot toSnapshot(Instant windowEnd, List<LogRecord> list) {
         long requests = list.size();
         long errors = list.stream().filter(r -> r.status() >= 400).count();
-//        double meanLatency = list.stream()
-//            .mapToDouble(LogRecord::responseTimeMillis)
-//            .average()
-//            .orElse(0.0);
         double meanLatency = 0.0;
         double errorRate = requests == 0 ? 0.0 : (double) errors / requests;
         return new MetricSnapshot(windowEnd, requests, errors, meanLatency, errorRate, requests);

@@ -11,7 +11,6 @@ class AsciidocFormatTest {
 
     @Test
     void testFormat_withValidLogResult() {
-        // Arrange
         LogResult result = new LogResult(
             100,
             512.5,
@@ -23,10 +22,8 @@ class AsciidocFormatTest {
         );
         AsciidocFormat formatter = new AsciidocFormat();
 
-        // Act
         String output = formatter.format(result);
 
-        // Assert
         String expected = """
             == Общая информация
 
@@ -50,10 +47,9 @@ class AsciidocFormatTest {
 
     @Test
     void testFormat_withNullRequests() {
-        // Arrange
+
         AsciidocFormat formatter = new AsciidocFormat();
 
-        // Act & Assert
         Exception ex = assertThrows(NullPointerException.class,
             () -> formatter.format(null));
         assertEquals("Переданы пустые переменные", ex.getMessage());

@@ -14,9 +14,9 @@ class MetricsAggregatorTest {
     @Test
     void aggregatesRecordsIntoOneMinuteBuckets() {
         List<LogRecord> logs = List.of(
-            log("00:00:01"), log("00:00:15"), log("00:00:55"), // 1 минута
-            log("00:01:02"), log("00:01:45"),                  // 2 минута
-            log("00:02:10")                                     // 3 минута
+            log("00:00:01"), log("00:00:15"), log("00:00:55"),
+            log("00:01:02"), log("00:01:45"),
+            log("00:02:10")
         );
         MetricsAggregator aggregator = new MetricsAggregator(Duration.ofMinutes(1), 5);
         List<MetricSnapshot> result = aggregator.aggregate(logs);
@@ -36,8 +36,8 @@ class MetricsAggregatorTest {
         MetricsAggregator aggregator = new MetricsAggregator(Duration.ofMinutes(1), 5);
         List<MetricSnapshot> result = aggregator.aggregate(logs);
 
-        assertEquals(2, result.get(0).errors()); // 500, 404
-        assertEquals(1, result.get(1).errors()); // 502
+        assertEquals(2, result.get(0).errors());
+        assertEquals(1, result.get(1).errors());
     }
 
     private LogRecord log(String time) {

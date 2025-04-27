@@ -13,7 +13,6 @@ class DateRangeLogFilterTest {
 
     @Test
     public void testFilterWithinRange() {
-        // Arrange
         LocalDateTime start = LocalDateTime.of(2024, 12, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(2024, 12, 10, 23, 59);
 
@@ -26,10 +25,8 @@ class DateRangeLogFilterTest {
         List<LogRecord> logs = Arrays.asList(log1, log2);
         DateRangeLogFilter filter = new DateRangeLogFilter(start, end);
 
-        // Act
         List<LogRecord> result = filter.filter(logs);
 
-        // Assert
         assertEquals(2, result.size());
         assertTrue(result.contains(log1));
         assertTrue(result.contains(log2));
@@ -37,7 +34,7 @@ class DateRangeLogFilterTest {
 
     @Test
     public void testFilterOutsideRange() {
-        // Arrange
+
         LocalDateTime start = LocalDateTime.of(2024, 12, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(2024, 12, 10, 23, 59);
 
@@ -50,16 +47,14 @@ class DateRangeLogFilterTest {
         List<LogRecord> logs = Arrays.asList(log1, log2);
         DateRangeLogFilter filter = new DateRangeLogFilter(start, end);
 
-        // Act
         List<LogRecord> result = filter.filter(logs);
 
-        // Assert
         assertTrue(result.isEmpty());
     }
 
     @Test
     public void testFilterOnBoundary() {
-        // Arrange
+
         LocalDateTime start = LocalDateTime.of(2024, 12, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(2024, 12, 10, 23, 59);
 
@@ -72,10 +67,8 @@ class DateRangeLogFilterTest {
         List<LogRecord> logs = Arrays.asList(log1, log2);
         DateRangeLogFilter filter = new DateRangeLogFilter(start, end);
 
-        // Act
         List<LogRecord> result = filter.filter(logs);
 
-        // Assert
         assertEquals(2, result.size());
         assertTrue(result.contains(log1));
         assertTrue(result.contains(log2));
@@ -83,17 +76,15 @@ class DateRangeLogFilterTest {
 
     @Test
     public void testFilterWithEmptyList() {
-        // Arrange
+
         LocalDateTime start = LocalDateTime.of(2024, 12, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(2024, 12, 10, 23, 59);
 
         List<LogRecord> logs = Collections.emptyList();
         DateRangeLogFilter filter = new DateRangeLogFilter(start, end);
 
-        // Act
         List<LogRecord> result = filter.filter(logs);
 
-        // Assert
         assertTrue(result.isEmpty());
     }
 }

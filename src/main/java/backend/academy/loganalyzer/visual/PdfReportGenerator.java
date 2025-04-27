@@ -27,7 +27,6 @@ public class PdfReportGenerator {
         doc.add(new Paragraph("Дата: " + LocalDateTime.now(), normalFont));
         doc.add(new Paragraph("\n"));
 
-        // Метрики
         doc.add(new Paragraph("Общая информация:", titleFont));
         Table table = new Table(2);
         table.addCell("Метрика");
@@ -58,7 +57,6 @@ public class PdfReportGenerator {
             }
         }
 
-        // График
         String graphPath = "src/main/resources/static/traffic_errors.png";
         var img = Image.getInstance(graphPath);
         img.scaleToFit(500, 300);

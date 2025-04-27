@@ -37,28 +37,21 @@ public class LogAnalyzerController {
     @PostMapping
     public ResponseEntity<LogResult> analyzeLog(@RequestParam("file") MultipartFile file) {
         try {
-            // 1) Сохраняем загруженный лог во временный файл
             Path tmp = Files.createTempFile("nginx-log-", ".log");
             file.transferTo(tmp);
 
-            // 2) Конфигурация: только source=file, path, формат — JSON
             Config config = new Config();
             config.source("file");
             config.streamingMode(false);
             config.path(tmp.toString());
             config.format("json");
 
-            // 3) Считаем batch — точно как runBatch в Main
             Reader reader = ReaderSelector.select(config);
             List<String> lines = reader.read().toList();
 
             var parser = new NginxLogParser();
             List<LogRecord> logs = parser.parse(lines.stream());
 
-            // 4) Фильтры (если нужны — здесь нет)
-            // пропускаем, т.к. filterField/filterValue = null по умолчанию
-
-            // 5) Метрики и аномалии
             MetricsAggregator agg = new MetricsAggregator(
                 Config.aggregationWindow(), CHART_WINDOWS
             );
@@ -66,13 +59,11 @@ public class LogAnalyzerController {
             AnomalyService anomalySvc = AnomalyConfigurator.defaultService();
             Map<String, List<Anomaly>> anomalies = anomalySvc.detectAll(snaps);
 
-            // 6) Подозрительные IP
             SuspiciousIpDetector ipDet = new SuspiciousIpDetector(
                 Config.aggregationWindow(), 10
             );
             Set<String> suspiciousIps = ipDet.detect(logs);
 
-            // 7) Собираем LogResult
             LogAnalyzer analyzer = new LogAnalyzer();
             LogResult result = new LogResult(
                 analyzer.countTotalRequests(logs),

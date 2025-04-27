@@ -42,17 +42,15 @@ import lombok.extern.log4j.Log4j2;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        // 1. Разбор аргументов
+
         Config config = new Config();
         JCommander.newBuilder()
             .addObject(config)
             .build()
             .parse(args);
 
-        // 2. Выбор ридера
         Reader reader = ReaderSelector.select(config);
 
-        // 3. Стриминг или батч
         if (config.streamingMode()) {
             runStreaming(reader, config);
         } else {
@@ -71,21 +69,17 @@ public class Main {
         AlertManager alert = buildAlertManager();
         ChartGenerator chartGen = new ChartGenerator();
 
-        // reader.read принимает Consumer<String>
         try {
             reader.read(line -> {
                 try {
-                    // 1) Парсим строку в LogRecord
+
                     LogRecord record = parser.parse(Stream.of(line)).get(0);
 
-                    // 2) Агрегация + аномалии
                     List<MetricSnapshot> snaps = aggregator.addAndAggregate(record);
                     Map<String, List<Anomaly>> anomalies = anomalySvc.detectAll(snaps);
 
-                    // 3) Подозрительные IP
                     Set<String> suspiciousIps = ipDetector.detect(List.of(record));
 
-                    // 4) Оповещения
                     if (!anomalies.isEmpty() || !suspiciousIps.isEmpty()) {
                         StringBuilder msg = new StringBuilder("*Аномалии на потоке:*\n");
                         anomalies.forEach((m, list) ->
@@ -95,7 +89,6 @@ public class Main {
                         alert.send(msg.toString());
                     }
 
-                    // 5) График раз в 5 окон
                     if (aggregator.shouldEmitChart()) {
                         String path = "output/stream_chart.png";
                         chartGen.generateTimeSeriesChart(snaps, path);
@@ -114,7 +107,6 @@ public class Main {
     private static void runBatch(Reader reader, Config config) {
         Instant start = Instant.now();
 
-        // Считываем все строки
         List<String> lines = null;
         try {
             lines = reader.read().toList();
@@ -122,13 +114,11 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        // Парсим в объекты
         NginxLogParser parser = new NginxLogParser();
         List<LogRecord> logs = parser.parse(lines.stream());
 
         LogAnalyzer analyzer = new LogAnalyzer();
 
-        // Фильтрация
         if (config.filterField() != null && config.filterValue() != null) {
             logs = analyzer.applyFilter(
                 logs,
@@ -156,7 +146,6 @@ public class Main {
             return;
         }
 
-        // Основной анализ
         IpAnalyzer ipAnalyzer = new IpAnalyzer();
         Map<String, Long> requestsPerIp = ipAnalyzer.countRequestsPerIp(logs);
         Map<String, Long> errorsPerIp = ipAnalyzer.countErrorsPerIp(logs);
@@ -173,9 +162,8 @@ public class Main {
             .limit(5)
             .forEach(e -> log.info("  {} → {} ошибок", e.getKey(), e.getValue()));
 
-        // Сбор метрик и аномалий
         MetricsAggregator aggregator = new MetricsAggregator(
-            Config.aggregationWindow(), 5  // 5 окон до графика
+            Config.aggregationWindow(), 5
         );
         List<MetricSnapshot> snapshots = aggregator.aggregate(logs);
         AnomalyService anomalySvc = AnomalyConfigurator.defaultService();
@@ -185,7 +173,6 @@ public class Main {
             new SuspiciousIpDetector(Config.aggregationWindow(), 10);
         Set<String> suspiciousIps = ipDetector.detect(logs);
 
-        // Уведомления
         AlertManager alert = buildAlertManager();
         if (!anomalies.isEmpty() || !suspiciousIps.isEmpty()) {
             StringBuilder msg = new StringBuilder("*NginxLogAnalyzer*: найденные аномалии\n");
@@ -198,7 +185,6 @@ public class Main {
             alert.send(msg.toString());
         }
 
-        // Генерация графика
         try {
             String chartPath = "output/report_chart.png";
             new ChartGenerator().generateTimeSeriesChart(snapshots, chartPath);
@@ -211,7 +197,6 @@ public class Main {
             log.error("Ошибка генерации графика", e);
         }
 
-        // Форматирование и экспорт
         LogReportFormat formatter =
             LogReportFormatFactory.getLogReportFormat(config.format());
         LogResult result = new LogResult(

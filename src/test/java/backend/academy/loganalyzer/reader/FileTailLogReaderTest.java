@@ -26,7 +26,6 @@ class FileTailLogReaderTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        // Arrange: создаём временный файл и пишем туда начальные строки
         tempFile = Files.createTempFile("tail-test", ".log");
         Files.write(tempFile, List.of("line1", "line2"));
         reader = new FileTailLogReader(tempFile.toString());
@@ -39,9 +38,6 @@ class FileTailLogReaderTest {
 
     @Test
     void readThrowsUnsupportedOnBatch() {
-        // Arrange на уровне @BeforeEach
-
-        // Act & Assert
         assertThatThrownBy(reader::read)
             .isInstanceOf(UnsupportedOperationException.class)
             .hasMessageContaining("не поддерживает batch");
@@ -49,10 +45,9 @@ class FileTailLogReaderTest {
 
     @Test
     void readConsumerThrowsWhenFileNotFound() {
-        // Arrange
+
         FileTailLogReader bad = new FileTailLogReader("no-such-file.log");
 
-        // Act & Assert
         assertThatThrownBy(() -> bad.read(line -> {
         }))
             .isInstanceOf(IOException.class);
@@ -60,7 +55,7 @@ class FileTailLogReaderTest {
 
     @Test
     void readConsumerAppendsAndStopsOnInterrupt() throws Exception {
-        // Arrange
+
         List<String> consumed = Collections.synchronizedList(new ArrayList<>());
         Consumer<String> consumer = consumed::add;
 
@@ -75,7 +70,6 @@ class FileTailLogReaderTest {
 
         Thread.sleep(200);
 
-        // Act
         Files.writeString(tempFile, "\nline3\nline4", StandardOpenOption.APPEND);
         Thread.sleep(500);
 
@@ -83,7 +77,6 @@ class FileTailLogReaderTest {
         exec.shutdownNow();
         exec.awaitTermination(1, TimeUnit.SECONDS);
 
-        // Assert
         assertThat(consumed)
             .containsSubsequence("line1", "line2", "line3", "line4");
     }
