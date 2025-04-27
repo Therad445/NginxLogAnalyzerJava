@@ -12,7 +12,6 @@ public class FileTailLogReader implements Reader {
         this.file = file;
     }
 
-    /** batch-режим можно не поддерживать */
     @Override
     public Stream<String> read() {
         throw new UnsupportedOperationException("FileTailLogReader не поддерживает batch");

@@ -5,10 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * LogAnalyzer.java — отвечает за сбор и вычисление статистики на основе парсированных логов.
- */
-
 public class LogAnalyzer {
 
     public static final double PERCENTILE = 0.95;

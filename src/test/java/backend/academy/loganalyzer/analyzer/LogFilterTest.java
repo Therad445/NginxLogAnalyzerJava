@@ -12,7 +12,7 @@ class LogFilterTest {
 
     @Test
     void filter_ShouldReturnFilteredRecords_WhenConditionIsMet() {
-        // Arrange
+
         List<LogRecord> records = List.of(
             createLogRecord("127.0.0.1", "INFO", "Test log 1"),
             createLogRecord("127.0.0.2", "ERROR", "Test log 2"),
@@ -23,10 +23,8 @@ class LogFilterTest {
             .filter(r -> "ERROR".equals(r.method()))
             .collect(Collectors.toList());
 
-        // Act
         List<LogRecord> result = filter.filter(records);
 
-        // Assert
         assertEquals(1, result.size());
         assertEquals("127.0.0.2", result.getFirst().remoteAddr());
         assertEquals("Test log 2", result.getFirst().request());
@@ -34,7 +32,7 @@ class LogFilterTest {
 
     @Test
     void filter_ShouldReturnEmptyList_WhenNoRecordsMatch() {
-        // Arrange
+
         List<LogRecord> records = List.of(
             createLogRecord("127.0.0.1", "INFO", "Test log 1"),
             createLogRecord("127.0.0.2", "INFO", "Test log 2")
@@ -44,26 +42,22 @@ class LogFilterTest {
             .filter(r -> "ERROR".equals(r.method()))
             .collect(Collectors.toList());
 
-        // Act
         List<LogRecord> result = filter.filter(records);
 
-        // Assert
         assertTrue(result.isEmpty());
     }
 
     @Test
     void filter_ShouldHandleEmptyList() {
-        // Arrange
+
         List<LogRecord> records = List.of();
 
         LogFilter filter = recs -> recs.stream()
             .filter(r -> "ERROR".equals(r.method()))
             .collect(Collectors.toList());
 
-        // Act
         List<LogRecord> result = filter.filter(records);
 
-        // Assert
         assertTrue(result.isEmpty());
     }
 

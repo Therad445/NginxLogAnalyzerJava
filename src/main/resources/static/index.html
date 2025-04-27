@@ -47,7 +47,6 @@
         const data = await res.json();
         document.getElementById('result').classList.remove('d-none');
 
-        // Метрики
         const metrics = document.getElementById('metrics');
         metrics.innerHTML = `
           <tr><td>Количество запросов</td><td>${data.totalRequests}</td></tr>
@@ -55,12 +54,10 @@
           <tr><td>95% перцентиль</td><td>${data.percentile}</td></tr>
         `;
 
-        // Аномалии
         const anomalies = document.getElementById('anomalies');
         anomalies.innerHTML = Object.entries(data.anomalies || {}).map(([metric, list]) =>
             `<li>${metric} — ${list.length} шт.</li>`).join('');
 
-        // Подозрительные IP
         const suspicious = document.getElementById('suspicious');
         suspicious.innerHTML = (data.suspiciousIps || []).map(ip => `<li>${ip}</li>`).join('');
     });

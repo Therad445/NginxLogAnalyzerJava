@@ -10,10 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class LogReportFormatTest {
     @Test
     void middleLine_withNullResult() {
-        // Arrange
+
         LogResult result = null;
         String newLine = null;
-        // Act
+
         LogReportFormat logReportFormat = new LogReportFormat() {
             @Override
             public String format(LogResult result) {
@@ -22,13 +22,13 @@ class LogReportFormatTest {
         };
         Exception exception =
             assertThrows(NullPointerException.class, () -> logReportFormat.middleLine(result, newLine));
-        //Assert
+
         assertEquals("Переданы пустые переменные", exception.getMessage());
     }
 
     @Test
     void middleLine_withNullNewLine() {
-        // Arrange
+
         LogResult result = new LogResult(
             100,
             512.5,
@@ -39,7 +39,7 @@ class LogReportFormatTest {
             Set.of()
         );
         String newLine = null;
-        // Act
+
         LogReportFormat logReportFormat = new LogReportFormat() {
             @Override
             public String format(LogResult result) {
@@ -48,13 +48,13 @@ class LogReportFormatTest {
         };
         Exception exception =
             assertThrows(NullPointerException.class, () -> logReportFormat.middleLine(result, newLine));
-        //Assert
+
         assertEquals("Передан пустой элемент переноса", exception.getMessage());
     }
 
     @Test
     void middleLine_withEmptyNewLine() {
-        // Arrange
+
         LogResult result = new LogResult(
             100,
             512.5,
@@ -65,7 +65,7 @@ class LogReportFormatTest {
             Set.of()
         );
         String newLine = "";
-        // Act
+
         LogReportFormat logReportFormat = new LogReportFormat() {
             @Override
             public String format(LogResult result) {
@@ -74,15 +74,14 @@ class LogReportFormatTest {
         };
         Exception exception =
             assertThrows(NullPointerException.class, () -> logReportFormat.middleLine(result, newLine));
-        //Assert
         assertEquals("Передан пустой элемент переноса", exception.getMessage());
     }
 
     @Test
     void formatNullCheck_withNull() {
-        // Arrange
+
         LogResult result = null;
-        // Act
+
         LogReportFormat logReportFormat = new LogReportFormat() {
             @Override
             public String format(LogResult result) {
@@ -90,7 +89,7 @@ class LogReportFormatTest {
             }
         };
         Exception exception = assertThrows(NullPointerException.class, () -> logReportFormat.formatNullCheck(result));
-        //Assert
+
         assertEquals("Переданы пустые переменные", exception.getMessage());
     }
 }

@@ -13,7 +13,7 @@ class FieldLogFilterTest {
 
     @Test
     public void testFilterByMethod() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.method("GET");
         log1.request("/home");
@@ -31,17 +31,15 @@ class FieldLogFilterTest {
         List<LogRecord> logs = Arrays.asList(log1, log2);
         FieldLogFilter filter = new FieldLogFilter("method", "GET");
 
-        // Act
         List<LogRecord> result = filter.filter(logs);
 
-        // Assert
         assertEquals(1, result.size());
         assertEquals("GET", result.getFirst().method());
     }
 
     @Test
     public void testFilterByAgent() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.method("GET");
         log1.request("/home");
@@ -59,17 +57,15 @@ class FieldLogFilterTest {
         List<LogRecord> logs = Arrays.asList(log1, log2);
         FieldLogFilter filter = new FieldLogFilter("agent", "Mozilla");
 
-        // Act
         List<LogRecord> result = filter.filter(logs);
 
-        // Assert
         assertEquals(1, result.size());
         assertTrue(result.getFirst().userAgent().startsWith("Mozilla"));
     }
 
     @Test
     public void testFilterByStatus() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.method("GET");
         log1.request("/home");
@@ -87,17 +83,15 @@ class FieldLogFilterTest {
         List<LogRecord> logs = Arrays.asList(log1, log2);
         FieldLogFilter filter = new FieldLogFilter("status", "200");
 
-        // Act
         List<LogRecord> result = filter.filter(logs);
 
-        // Assert
         assertEquals(1, result.size());
         assertEquals(200, result.getFirst().status());
     }
 
     @Test
     public void testFilterByRequest() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.method("GET");
         log1.request("/home");
@@ -115,17 +109,15 @@ class FieldLogFilterTest {
         List<LogRecord> logs = Arrays.asList(log1, log2);
         FieldLogFilter filter = new FieldLogFilter("request", "home");
 
-        // Act
         List<LogRecord> result = filter.filter(logs);
 
-        // Assert
         assertEquals(1, result.size());
         assertTrue(result.getFirst().request().contains("home"));
     }
 
     @Test
     public void testFilterWithInvalidField() {
-        // Arrange
+
         LogRecord log1 = new LogRecord();
         log1.method("GET");
         log1.request("/home");
@@ -136,10 +128,8 @@ class FieldLogFilterTest {
         List<LogRecord> logs = Collections.singletonList(log1);
         FieldLogFilter filter = new FieldLogFilter("invalidField", "value");
 
-        // Act
         List<LogRecord> result = filter.filter(logs);
 
-        // Assert
         assertTrue(result.isEmpty());
     }
 }

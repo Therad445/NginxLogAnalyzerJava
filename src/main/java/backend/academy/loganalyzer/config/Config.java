@@ -5,9 +5,6 @@ import java.time.Duration;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Config — класс для разбора аргументов командной строки при запуске NginxLogAnalyzer.
- */
 @Setter
 @Getter
 public class Config {

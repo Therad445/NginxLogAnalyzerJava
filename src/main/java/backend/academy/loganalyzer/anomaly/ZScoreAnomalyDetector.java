@@ -40,8 +40,6 @@ public class ZScoreAnomalyDetector implements AnomalyDetector {
             double std = Math.sqrt(Arrays.stream(window).map(x -> Math.pow(x - mean, 2)).sum() / window.length);
             double x = metricExtractor.apply(history.get(i));
 
-//            log.debug("Z-Score calc → mean={}, std={}, x={} (metric: {})", mean, std, x, metricName);
-
             if (std == 0) {
                 if (x != mean) {
                     anomalies.add(
@@ -51,7 +49,6 @@ public class ZScoreAnomalyDetector implements AnomalyDetector {
                 continue;
             }
             double z = Math.abs((x - mean) / std);
-//            log.debug("→ z = {} (threshold = {})", z, zThreshold);
 
             if (z >= zThreshold) {
                 anomalies.add(new Anomaly(history.get(i).timestamp(), metricName, x, mean + zThreshold * std, z));

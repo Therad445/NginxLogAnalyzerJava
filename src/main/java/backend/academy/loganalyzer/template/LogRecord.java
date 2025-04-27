@@ -4,9 +4,6 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * LogRecord.java — POJO, представляющий одну запись лога с полями, соответствующими структуре NGINX логов.
- */
 @Getter
 @Setter
 public class LogRecord {

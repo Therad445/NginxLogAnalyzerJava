@@ -3,9 +3,6 @@ package backend.academy.loganalyzer.anomaly;
 import backend.academy.loganalyzer.config.Config;
 import java.util.List;
 
-/**
- * Создаёт AnomalyService с набором детекторов, сконфигурированных по Config.
- */
 public class AnomalyConfigurator {
 
     public static AnomalyService defaultService() {
@@ -17,7 +14,7 @@ public class AnomalyConfigurator {
         return new AnomalyService(List.of(
             new ZScoreAnomalyDetector(
                 "reqsPerWindow",
-                ms -> (double) ms.reqsPerWindow(),  // приведение long→Double
+                ms -> (double) ms.reqsPerWindow(),
                 windowSize,
                 zThresh
             ),
