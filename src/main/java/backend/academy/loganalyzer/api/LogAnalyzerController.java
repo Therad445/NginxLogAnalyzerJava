@@ -1,12 +1,25 @@
 package backend.academy.loganalyzer.api;
 
-import backend.academy.Main;
+import backend.academy.loganalyzer.analyzer.LogAnalyzer;
+import backend.academy.loganalyzer.analyzer.SuspiciousIpDetector;
+import backend.academy.loganalyzer.anomaly.Anomaly;
+import backend.academy.loganalyzer.anomaly.AnomalyConfigurator;
+import backend.academy.loganalyzer.anomaly.AnomalyService;
+import backend.academy.loganalyzer.anomaly.MetricSnapshot;
+import backend.academy.loganalyzer.anomaly.MetricsAggregator;
 import backend.academy.loganalyzer.config.Config;
+import backend.academy.loganalyzer.parser.NginxLogParser;
+import backend.academy.loganalyzer.reader.Reader;
+import backend.academy.loganalyzer.reader.ReaderSelector;
+import backend.academy.loganalyzer.report.LogReportFormatFactory;
+import backend.academy.loganalyzer.template.LogRecord;
 import backend.academy.loganalyzer.template.LogResult;
 import backend.academy.loganalyzer.visual.PdfReportGenerator;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,29 +32,60 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/analyze")
 public class LogAnalyzerController {
 
+    private static final int CHART_WINDOWS = 5;
+
     @PostMapping
     public ResponseEntity<LogResult> analyzeLog(@RequestParam("file") MultipartFile file) {
         try {
-            // Сохраняем лог во временный файл
-            Path temp = Files.createTempFile("nginx-log-", ".log");
-            file.transferTo(temp);
+            // 1) Сохраняем загруженный лог во временный файл
+            Path tmp = Files.createTempFile("nginx-log-", ".log");
+            file.transferTo(tmp);
 
-            // Запускаем анализ
+            // 2) Конфигурация: только source=file, path, формат — JSON
             Config config = new Config();
-            config.path(temp.toAbsolutePath().toString());
+            config.source("file");
+            config.streamingMode(false);
+            config.path(tmp.toString());
             config.format("json");
 
-            LogResult result = Main.getLogResult(
-                config,
-                config.path(), null, null, null, null
+            // 3) Считаем batch — точно как runBatch в Main
+            Reader reader = ReaderSelector.select(config);
+            List<String> lines = reader.read().toList();
+
+            var parser = new NginxLogParser();
+            List<LogRecord> logs = parser.parse(lines.stream());
+
+            // 4) Фильтры (если нужны — здесь нет)
+            // пропускаем, т.к. filterField/filterValue = null по умолчанию
+
+            // 5) Метрики и аномалии
+            MetricsAggregator agg = new MetricsAggregator(
+                Config.aggregationWindow(), CHART_WINDOWS
+            );
+            List<MetricSnapshot> snaps = agg.aggregate(logs);
+            AnomalyService anomalySvc = AnomalyConfigurator.defaultService();
+            Map<String, List<Anomaly>> anomalies = anomalySvc.detectAll(snaps);
+
+            // 6) Подозрительные IP
+            SuspiciousIpDetector ipDet = new SuspiciousIpDetector(
+                Config.aggregationWindow(), 10
+            );
+            Set<String> suspiciousIps = ipDet.detect(logs);
+
+            // 7) Собираем LogResult
+            LogAnalyzer analyzer = new LogAnalyzer();
+            LogResult result = new LogResult(
+                analyzer.countTotalRequests(logs),
+                analyzer.averageResponseSize(logs),
+                analyzer.countResources(logs),
+                analyzer.countStatusCodes(logs),
+                analyzer.percentile95ResponseSize(logs),
+                anomalies,
+                suspiciousIps
             );
 
-            if (result == null) {
-                return ResponseEntity.badRequest().build();
-            }
             return ResponseEntity.ok(result);
-
-        } catch (Exception e) {
+        } catch (Exception ex) {
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -49,30 +93,49 @@ public class LogAnalyzerController {
     @PostMapping("/pdf")
     public ResponseEntity<byte[]> analyzeLogToPdf(@RequestParam("file") MultipartFile file) {
         try {
-            // Временный файл
-            Path temp = Files.createTempFile("nginx-log-", ".log");
-            file.transferTo(temp);
+            Path tmp = Files.createTempFile("nginx-log-", ".log");
+            file.transferTo(tmp);
 
-            // Анализ
             Config config = new Config();
-            config.path(temp.toAbsolutePath().toString());
+            config.source("file");
+            config.streamingMode(false);
+            config.path(tmp.toString());
             config.format("markdown");
-            LogResult result = Main.getLogResult(config, config.path(), null, null, null, null);
-            if (result == null) {
-                return ResponseEntity.badRequest().build();
-            }
 
-            // Генерация PDF во временный файл
+            Reader reader = ReaderSelector.select(config);
+            List<String> lines = reader.read().toList();
+            List<LogRecord> logs = new NginxLogParser().parse(lines.stream());
+
+            MetricsAggregator agg = new MetricsAggregator(
+                Config.aggregationWindow(), CHART_WINDOWS
+            );
+            List<MetricSnapshot> snaps = agg.aggregate(logs);
+            Map<String, List<Anomaly>> anomalies = AnomalyConfigurator
+                .defaultService()
+                .detectAll(snaps);
+            Set<String> suspiciousIps = new SuspiciousIpDetector(
+                Config.aggregationWindow(), 10
+            ).detect(logs);
+
+            LogAnalyzer analyzer = new LogAnalyzer();
+            LogResult result = new LogResult(
+                analyzer.countTotalRequests(logs),
+                analyzer.averageResponseSize(logs),
+                analyzer.countResources(logs),
+                analyzer.countStatusCodes(logs),
+                analyzer.percentile95ResponseSize(logs),
+                anomalies,
+                suspiciousIps
+            );
+
             Path pdf = Files.createTempFile("report-", ".pdf");
             new PdfReportGenerator().generate(result, pdf.toString());
-
-            // Читаем PDF в байты
             byte[] content = Files.readAllBytes(pdf);
+
             return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=\"report.pdf\"")
                 .header("Content-Type", "application/pdf")
                 .body(content);
-
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
@@ -81,19 +144,42 @@ public class LogAnalyzerController {
     @PostMapping(value = "/markdown", produces = "text/markdown")
     public ResponseEntity<String> analyzeToMarkdown(@RequestParam("file") MultipartFile file) {
         try {
-            Path temp = Files.createTempFile("nginx-", ".log");
-            file.transferTo(temp);
+            Path tmp = Files.createTempFile("nginx-log-", ".log");
+            file.transferTo(tmp);
 
             Config config = new Config();
-            config.path(temp.toAbsolutePath().toString());
+            config.source("file");
+            config.streamingMode(false);
+            config.path(tmp.toString());
             config.format("markdown");
 
-            LogResult result = Main.getLogResult(config, config.path(), null, null, null, null);
-            if (result == null) {
-                return ResponseEntity.badRequest().build();
-            }
+            Reader reader = ReaderSelector.select(config);
+            List<String> lines = reader.read().toList();
+            List<LogRecord> logs = new NginxLogParser().parse(lines.stream());
 
-            String markdown = backend.academy.loganalyzer.report.LogReportFormatFactory
+            MetricsAggregator agg = new MetricsAggregator(
+                Config.aggregationWindow(), CHART_WINDOWS
+            );
+            List<MetricSnapshot> snaps = agg.aggregate(logs);
+            Map<String, List<Anomaly>> anomalies = AnomalyConfigurator
+                .defaultService()
+                .detectAll(snaps);
+            Set<String> suspiciousIps = new SuspiciousIpDetector(
+                Config.aggregationWindow(), 10
+            ).detect(logs);
+
+            LogAnalyzer analyzer = new LogAnalyzer();
+            LogResult result = new LogResult(
+                analyzer.countTotalRequests(logs),
+                analyzer.averageResponseSize(logs),
+                analyzer.countResources(logs),
+                analyzer.countStatusCodes(logs),
+                analyzer.percentile95ResponseSize(logs),
+                anomalies,
+                suspiciousIps
+            );
+
+            String markdown = LogReportFormatFactory
                 .getLogReportFormat("markdown")
                 .format(result);
 
@@ -107,43 +193,4 @@ public class LogAnalyzerController {
     public String ping() {
         return "✅ NginxLogAnalyzer API работает";
     }
-
-    @PostMapping("/telegram")
-    public ResponseEntity<String> analyzeAndSendToTelegram(@RequestParam("file") MultipartFile file) {
-        try {
-            Path temp = Files.createTempFile("log-", ".log");
-            file.transferTo(temp);
-
-            Config config = new Config();
-            config.path(temp.toAbsolutePath().toString());
-            config.format("markdown");
-
-            LogResult result = Main.getLogResult(config, config.path(), null, null, null, null);
-            return result == null
-                ? ResponseEntity.badRequest().body("Анализ не выполнен")
-                : ResponseEntity.ok("Отчёт отправлен в Telegram");
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Ошибка анализа: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/")
-    public String index() {
-        return "index.html";
-    }
-
-    @GetMapping("/chart")
-    public ResponseEntity<byte[]> getChart() throws IOException {
-        Path chart = Path.of("src/main/resources/static/traffic_errors.png");
-        if (!Files.exists(chart)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok()
-            .header("Content-Type", "image/png")
-            .body(Files.readAllBytes(chart));
-    }
-
 }
-

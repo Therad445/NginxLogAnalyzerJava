@@ -1,38 +1,32 @@
 package backend.academy.loganalyzer.reader;
 
+import backend.academy.loganalyzer.config.Config;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ReaderSelector {
-    public static Reader typeSelector(String path) throws IOException {
-        if (isUrl(path)) {
-            return new URLReader();
-        } else if (checkPath(path)) {
-            return new FileReader();
-        } else {
-            throw new IllegalArgumentException("Ошибка с указанным путём");
-        }
-    }
+    public static Reader select(Config cfg) throws IOException {
+        switch (cfg.source().toLowerCase()) {
+            case "kafka":
+                if (!cfg.streamingMode()) {
+                    throw new IllegalArgumentException("Kafka только в streaming-режиме");
+                }
+                return new KafkaLogReader(cfg);
 
-    public static boolean isUrl(String input) {
-        try {
-            new URI(input).toURL();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+            case "file":
+                return cfg.streamingMode()
+                    ? new FileTailLogReader(cfg.path())
+                    : new FileReader(cfg.path());
 
-    public static boolean checkPath(String path) throws NoSuchFileException {
-        Path filePath = Path.of(path);
-        if (!Files.exists(filePath)) {
-            throw new NoSuchFileException("Нет файла по данному пути: " + filePath.toAbsolutePath());
+            case "url":
+                if (cfg.streamingMode()) {
+                    throw new IllegalArgumentException("URL не поддерживает --stream");
+                }
+                return new URLReader(cfg.path());
+
+            default:
+                throw new IllegalArgumentException("Unknown source: " + cfg.source());
         }
-        return true;
     }
 }
