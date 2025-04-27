@@ -1,137 +1,226 @@
-# Шаблон Java-проекта для домашних заданий
+# Nginx Log Analyzer
 
-Шаблон для домашних заданий [Академии Бэкенда 2024][course-url].
+Анализатор и отчётный сервис для логов Nginx:  
+– сбор метрик и выявление аномалий,  
+– детекция подозрительных IP,  
+– генерация отчётов в формате PDF и Markdown,  
+– визуализация временных рядов.
 
-Цель данного репозитория – познакомить вас с процессом разработки приложений на
-Java с использованием наиболее распространенных практик, инструментов и
-библиотек.
+---
 
-## Структура проекта
+## Содержание
 
-Это типовой Java-проект, который собирается с помощью инструмента автоматической
-сборки проектов [Apache Maven](https://maven.apache.org/).
+- [Описание](#описание)
+- [Ключевые возможности](#ключевые-возможности)
+- [Архитектура](#архитектура)
+- [Технологии](#технологии)
+- [Установка и запуск](#установка-и-запуск)
+- [Конфигурация](#конфигурация)
+- [REST API](#rest-api)
+- [Примеры использования](#примеры-использования)
+- [Тестирование](#тестирование)
+- [Contributing](#contributing)
+- [Лицензия](#лицензия)
 
-Проект состоит из следующих директорий и файлов:
+---
 
-- [pom.xml](./pom.xml) – дескриптор сборки, используемый maven, или Project
-  Object Model. В нем описаны зависимости проекта и шаги по его сборке
-- [src/](./src) – директория, которая содержит исходный код приложения и его
-  тесты:
-  - [src/main/](./src/main) – здесь находится код вашего приложения
-  - [src/test/](./src/test) – здесь находятся тесты вашего приложения
-- [mvnw](./mvnw) и [mvnw.cmd](./mvnw.cmd) – скрипты maven wrapper для Unix и
-  Windows, которые позволяют запускать команды maven без локальной установки
-- [checkstyle.xml](checkstyle.xml),
-  [checkstyle-suppression.xml](checkstyle-suppression.xml), [pmd.xml](pmd.xml) и
-  [spotbugs-excludes.xml](spotbugs-excludes.xml) – в проекте используются
-  [линтеры](https://en.wikipedia.org/wiki/Lint_%28software%29) для контроля
-  качества кода. Указанные файлы содержат правила для используемых линтеров
-- [.mvn/](./.mvn) – служебная директория maven, содержащая конфигурационные
-  параметры сборщика
-- [lombok.config](lombok.config) – конфигурационный файл
-  [Lombok](https://projectlombok.org/), библиотеки помогающей избежать рутинного
-  написания шаблонного кода
-- [.editorconfig](.editorconfig) – файл с описанием настроек форматирования кода
-- [.github/workflows/build.yml](.github/workflows/build.yml) – файл с описанием
-  шагов сборки проекта в среде Github
-- [.gitattributes](.gitattributes), [.gitignore](.gitignore) – служебные файлы
-  для git, с описанием того, как обрабатывать различные файлы, и какие из них
-  игнорировать
+## Описание
 
-## Начало работы
+Проект реализует конвейер обработки логов Nginx:
 
-Подробнее о том, как приступить к разработке, описано в разделах
-[курса][course-url] `1.8 Настройка IDE`, `1.9 Работа с Git` и
-`1.10 Настройка SSH`.
+1. **Чтение**  
+   – локального файла или из Kafka (batch/stream).
+2. **Парсинг**  
+   – получение домена, HTTP-метода, URL, кода ответа, размера и времени.
+3. **Агрегация**  
+   – разбиение на окна фиксированной длительности, вычисление метрик.
+4. **Аномалия-детект**  
+   – Z-score и EWMA-анализ по размеру и количеству запросов.
+5. **Подозрительные IP**  
+   – выявление IP с непривычно высоким трафиком.
+6. **Отчёты**  
+   – REST-сервис: JSON, PDF-генератор, Markdown-финал.
+7. **Визуализация**  
+   – временные ряды запросов и error-rate в виде PNG-графика.
 
-Для того чтобы собрать проект, и проверить, что все работает корректно, можно
-запустить из модального окна IDEA
-[Run Anything](https://www.jetbrains.com/help/idea/running-anything.html)
-команду:
+---
 
-```shell
-mvn clean verify
+## Ключевые возможности
+
+- Поддержка batch- и streaming-режимов чтения логов
+- Парсинг формата Nginx Combined Log
+- Расчёт:
+    - общего количества запросов
+    - среднего размера ответа
+    - 95-го перцентиля
+- Две методики детекции аномалий: Z-score и EWMA
+- Детекция подозрительных IP по частоте
+- Генерация:
+    - **JSON** результата
+    - **PDF** отчёта с таблицей и графиком
+    - **Markdown** отчёта
+- Лёгкий Spring Boot API с тестовым ping-endpoint
+
+---
+
+## Архитектура
+
+```
+┌────────────┐      ┌───────────┐     ┌───────────────┐
+│  Reader    │─────▶│  Parser   │────▶│ Aggregator    │
+│(File/Kafka)│      │ (NginxLog)│     │ (Metrics)     │
+└────────────┘      └───────────┘     └───────────────┘
+       │                                 │
+       ▼                                 ▼
+┌───────────┐      ┌───────────────┐   ┌───────────┐
+│ Anomaly   │◀─────│ AnomalySvc    │   │ Suspicious│
+│ Detectors │      │ (ZScore+EWMA) │   │ IpDetector│
+└───────────┘      └───────────────┘   └───────────┘
+       │                     │
+       └──────────┬──────────┘
+                  ▼
+            ┌────────────┐
+            │  Report    │
+            │ Generator  │
+            │ PDF/MD/JSON│
+            └────────────┘
 ```
 
-Альтернативно можно в терминале из корня проекта выполнить следующие команды.
+---
 
-Для Unix (Linux, macOS, Cygwin, WSL):
+## Технологии
 
-```shell
-./mvnw clean verify
+- Java 12
+- Spring Boot 3
+- Apache Kafka (Reader)
+- XChart (PNG-график)
+- OpenPDF (iText 2.1.7 API)
+- JUnit 5 + AssertJ + MockMVC
+- Maven
+
+---
+
+## Установка и запуск
+
+1. Клонировать репозиторий
+   ```bash
+   git clone https://github.com/Therad445/NginxLogAnalyzerJava.git
+   cd nginx-log-analyzer
+   ```
+2. Собрать проект
+   ```bash
+   mvn clean package
+   ```
+3. Запустить приложение
+   ```bash
+   java -jar target/nginx-log-analyzer-1.0.0.jar
+   ```
+   или
+   ```bash
+   mvn spring-boot:run
+   ```
+4. По умолчанию REST-сервис слушает порт **8080**
+
+---
+
+## Конфигурация
+
+В `application.yml` (или через API-конфиг `new Config()`) можно задать:
+
+```yaml
+app:
+  source: file         # или kafka
+  streaming-mode: false
+  path: /path/to/log
+  format: json         # json | markdown
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092
+    group-id: gid
+    topic: nginx-logs
+aggregation:
+  window-seconds: 60
+  chart-windows: 5
+anomaly:
+  z-threshold: 3.0
+  ewma:
+    alpha: 0.3
+    k: 3.0
+suspicious:
+  threshold-per-window: 10
 ```
 
-Для Windows:
+---
 
-```shell
-mvnw.cmd clean verify
+## REST API
+
+### `GET /analyze/ping`
+
+Проверка доступности.  
+Ответ:
+```
+✅ NginxLogAnalyzer API работает
 ```
 
-Для окончания сборки потребуется подождать какое-то время, пока maven скачает
-все необходимые зависимости, скомпилирует проект и прогонит базовый набор
-тестов.
+---
 
-Если вы в процессе сборки получили ошибку:
+### `POST /analyze`
 
-```shell
-Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion failed with message:
-JDK version must be at least 22
+- **Параметр**: `file` – multipart-upload лог-файла
+- **Возвращает**: `200 OK` + JSON → `LogResult`
+```json
+{
+  "totalRequests": 1234,
+  "averageResponseSize": 456.78,
+  "resourceCounts": { "/": 400, "/api": 300, … },
+  "statusCodeCounts": { "200": 1100, "404": 100, … },
+  "percentile": 1024.0,
+  "anomalies": { "reqsPerWindow": [ … ], "errorRate": [ … ] },
+  "suspiciousIps": [ "1.2.3.4", "5.6.7.8" ]
+}
 ```
 
-Значит, версия вашего JDK ниже 22.
+---
+### `POST /analyze/pdf`
 
-Если же получили ошибку:
+- **Параметр**: `file`
+- **Возвращает**: `application/pdf` + бинарный PDF отчёт
+- **Заголовки**:
+    - `Content-Disposition: attachment; filename="report.pdf"`
 
-```shell
-Rule 1: org.apache.maven.enforcer.rules.version.RequireMavenVersion failed with message:
-Maven version should, at least, be 3.8.8
+---
+### `POST /analyze/markdown`
+
+- **Параметр**: `file`
+- **Возвращает**: `text/markdown` + Markdown-отчёт
+
+---
+
+## Примеры использования
+
+```bash
+# JSON-отчёт в терминал
+curl -F file=@path/to/example.log http://localhost:8080/analyze
+
+# Сохранить PDF-отчёт
+curl -F file=@path/to/example.log http://localhost:8080/analyze/pdf > report.pdf
+
+# Сохранить Markdown-отчёт
+curl -F file=@path/to/example.log http://localhost:8080/analyze/markdown > report.md
 ```
 
-Значит, у вас используется версия maven ниже 3.8.8. Такого не должно произойти,
-если вы запускаете сборку из IDEA или через `mvnw`-скрипты.
+---
 
-Далее будут перечислены другие полезные команды maven.
+## Тестирование
 
-Запуск только компиляции основных классов:
-
-```shell
-mvn compile
-```
-
-Запуск тестов:
-
-```shell
+```bash
 mvn test
 ```
 
-Запуск линтеров:
 
-```shell
-mvn checkstyle:check modernizer:modernizer spotbugs:check pmd:check pmd:cpd-check
-```
 
-Вывод дерева зависимостей проекта (полезно при отладке транзитивных
-зависимостей):
+---
 
-```shell
-mvn dependency:tree
-```
+## Лицензия
 
-Вывод вспомогательной информации о любом плагине (вместо `compiler` можно
-подставить интересующий вас плагин):
-
-```shell
-mvn help:describe -Dplugin=compiler
-```
-
-## Дополнительные материалы
-
-- Документация по maven: https://maven.apache.org/guides/index.html
-- Поиск зависимостей и их версий: https://central.sonatype.com/search
-- Документация по процессу автоматизированной сборки в среде github:
-  https://docs.github.com/en/actions
-- Документация по git: https://git-scm.com/doc
-- Javadoc для Java 22:
-  https://docs.oracle.com/en/java/javase/22/docs/api/index.html
-
-[course-url]: https://edu.tinkoff.ru/all-activities/courses/870efa9d-7067-4713-97ae-7db256b73eab
+MIT License  
+См. файл [LICENSE](LICENSE).
