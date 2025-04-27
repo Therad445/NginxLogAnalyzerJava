@@ -41,47 +41,211 @@ import lombok.extern.log4j.Log4j2;
 @UtilityClass
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        // 1. Разбор аргументов
         Config config = new Config();
-        JCommander.newBuilder().addObject(config).build().parse(args);
-        LogReportFormat formatter = LogReportFormatFactory.getLogReportFormat(config.format());
+        JCommander.newBuilder()
+            .addObject(config)
+            .build()
+            .parse(args);
 
-        Instant start = Instant.now();
-        LogResult result = getLogResult(config, config.path(), config.filterField(), config.filterValue(),
-            config.from(), config.to());
-        Instant end = Instant.now();
-        log.info("⏱ Анализ занял: {} мс", Duration.between(start, end).toMillis());
+        // 2. Выбор ридера
+        Reader reader = ReaderSelector.select(config);
 
+        // 3. Стриминг или батч
+        if (config.streamingMode()) {
+            runStreaming(reader, config);
+        } else {
+            runBatch(reader, config);
+        }
+    }
+
+    private static void runStreaming(Reader reader, Config config) {
+        NginxLogParser parser = new NginxLogParser();
+        MetricsAggregator aggregator = new MetricsAggregator(
+            Config.aggregationWindow(), 5
+        );
+        AnomalyService anomalySvc = AnomalyConfigurator.defaultService();
+        SuspiciousIpDetector ipDetector =
+            new SuspiciousIpDetector(Config.aggregationWindow(), 10);
+        AlertManager alert = buildAlertManager();
+        ChartGenerator chartGen = new ChartGenerator();
+
+        // reader.read принимает Consumer<String>
         try {
-            if (result != null) {
-                log.info(formatter.format(result));
-
-                if (config.exportJson() != null) {
-                    Path p = Path.of(config.exportJson());
-                    ResultExporter.toJson(result, p);
-                    log.info("💾 Сохранено в JSON: {}", p);
-                }
-                if (config.exportCsv() != null) {
-                    Path p = Path.of(config.exportCsv());
-                    ResultExporter.toCsv(result, p);
-                    log.info("💾 Сохранено в CSV: {}", p);
-                }
+            reader.read(line -> {
                 try {
-                    new PdfReportGenerator().generate(result, "output/report.pdf");
-                    log.info("📄 PDF-отчёт сохранён: output/report.pdf");
-                } catch (Exception e) {
-                    log.warn("❌ Не удалось сгенерировать PDF-отчёт", e);
-                }
+                    // 1) Парсим строку в LogRecord
+                    LogRecord record = parser.parse(Stream.of(line)).get(0);
 
-            } else {
-                log.error("⚠ Ошибка анализа: LogResult == null (возможно, после фильтрации не осталось записей)");
-            }
+                    // 2) Агрегация + аномалии
+                    List<MetricSnapshot> snaps = aggregator.addAndAggregate(record);
+                    Map<String, List<Anomaly>> anomalies = anomalySvc.detectAll(snaps);
+
+                    // 3) Подозрительные IP
+                    Set<String> suspiciousIps = ipDetector.detect(List.of(record));
+
+                    // 4) Оповещения
+                    if (!anomalies.isEmpty() || !suspiciousIps.isEmpty()) {
+                        StringBuilder msg = new StringBuilder("*Аномалии на потоке:*\n");
+                        anomalies.forEach((m, list) ->
+                            msg.append("• ").append(m).append(": ").append(list.size()).append("\n"));
+                        suspiciousIps.forEach(ip ->
+                            msg.append("🚨 ").append(ip).append("\n"));
+                        alert.send(msg.toString());
+                    }
+
+                    // 5) График раз в 5 окон
+                    if (aggregator.shouldEmitChart()) {
+                        String path = "output/stream_chart.png";
+                        chartGen.generateTimeSeriesChart(snaps, path);
+                        alert.sendImage(new File(path), "📊 Стриминговый график");
+                    }
+
+                } catch (Exception ex) {
+                    log.error("Ошибка в стриминге", ex);
+                }
+            });
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при экспорте отчёта", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void runBatch(Reader reader, Config config) {
+        Instant start = Instant.now();
+
+        // Считываем все строки
+        List<String> lines = null;
+        try {
+            lines = reader.read().toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
-        log.debug("TOKEN = {}", System.getenv("TG_TOKEN"));
-        log.debug("CHAT  = {}", System.getenv("TG_CHAT"));
+        // Парсим в объекты
+        NginxLogParser parser = new NginxLogParser();
+        List<LogRecord> logs = parser.parse(lines.stream());
+
+        LogAnalyzer analyzer = new LogAnalyzer();
+
+        // Фильтрация
+        if (config.filterField() != null && config.filterValue() != null) {
+            logs = analyzer.applyFilter(
+                logs,
+                new FieldLogFilter(config.filterField(), config.filterValue())
+            );
+        }
+        if (config.filterIp() != null) {
+            logs = analyzer.applyFilter(
+                logs,
+                new FieldLogFilter("remoteAddr", config.filterIp())
+            );
+        }
+        if (config.from() != null && config.to() != null) {
+            logs = analyzer.applyFilter(
+                logs,
+                new DateRangeLogFilter(
+                    LocalDateTime.parse(config.from()),
+                    LocalDateTime.parse(config.to())
+                )
+            );
+        }
+
+        if (logs.isEmpty()) {
+            log.warn("⚠ После фильтрации логов не осталось записей.");
+            return;
+        }
+
+        // Основной анализ
+        IpAnalyzer ipAnalyzer = new IpAnalyzer();
+        Map<String, Long> requestsPerIp = ipAnalyzer.countRequestsPerIp(logs);
+        Map<String, Long> errorsPerIp = ipAnalyzer.countErrorsPerIp(logs);
+
+        log.info("📌 Топ 5 IP по запросам:");
+        requestsPerIp.entrySet().stream()
+            .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+            .limit(5)
+            .forEach(e -> log.info("  {} → {} запросов", e.getKey(), e.getValue()));
+
+        log.info("📌 Топ 5 IP по ошибкам:");
+        errorsPerIp.entrySet().stream()
+            .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+            .limit(5)
+            .forEach(e -> log.info("  {} → {} ошибок", e.getKey(), e.getValue()));
+
+        // Сбор метрик и аномалий
+        MetricsAggregator aggregator = new MetricsAggregator(
+            Config.aggregationWindow(), 5  // 5 окон до графика
+        );
+        List<MetricSnapshot> snapshots = aggregator.aggregate(logs);
+        AnomalyService anomalySvc = AnomalyConfigurator.defaultService();
+        Map<String, List<Anomaly>> anomalies = anomalySvc.detectAll(snapshots);
+
+        SuspiciousIpDetector ipDetector =
+            new SuspiciousIpDetector(Config.aggregationWindow(), 10);
+        Set<String> suspiciousIps = ipDetector.detect(logs);
+
+        // Уведомления
+        AlertManager alert = buildAlertManager();
+        if (!anomalies.isEmpty() || !suspiciousIps.isEmpty()) {
+            StringBuilder msg = new StringBuilder("*NginxLogAnalyzer*: найденные аномалии\n");
+            anomalies.forEach((m, list) ->
+                msg.append("• ").append(m).append(": ").append(list.size()).append("\n"));
+            if (!suspiciousIps.isEmpty()) {
+                msg.append("🚨 Подозрительные IP:\n");
+                suspiciousIps.forEach(ip -> msg.append("• ").append(ip).append("\n"));
+            }
+            alert.send(msg.toString());
+        }
+
+        // Генерация графика
+        try {
+            String chartPath = "output/report_chart.png";
+            new ChartGenerator().generateTimeSeriesChart(snapshots, chartPath);
+            File img = new File(chartPath);
+            if (img.exists()) {
+                alert.sendImage(img, "📊 График трафика и ошибок");
+                log.info("📊 График сохранён: {}", chartPath);
+            }
+        } catch (IOException e) {
+            log.error("Ошибка генерации графика", e);
+        }
+
+        // Форматирование и экспорт
+        LogReportFormat formatter =
+            LogReportFormatFactory.getLogReportFormat(config.format());
+        LogResult result = new LogResult(
+            analyzer.countTotalRequests(logs),
+            analyzer.averageResponseSize(logs),
+            analyzer.countResources(logs),
+            analyzer.countStatusCodes(logs),
+            analyzer.percentile95ResponseSize(logs),
+            anomalies,
+            suspiciousIps
+        );
+        log.info(formatter.format(result));
+
+        try {
+            if (config.exportJson() != null) {
+                Path p = Path.of(config.exportJson());
+                ResultExporter.toJson(result, p);
+                log.info("💾 JSON сохранён: {}", p);
+            }
+            if (config.exportCsv() != null) {
+                Path p = Path.of(config.exportCsv());
+                ResultExporter.toCsv(result, p);
+                log.info("💾 CSV сохранён: {}", p);
+            }
+            new PdfReportGenerator().generate(result, "output/report.pdf");
+            log.info("📄 PDF-отчёт: output/report.pdf");
+        } catch (IOException ex) {
+            log.error("Ошибка при экспорте результатов", ex);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        log.info("⏱ Анализ занял: {} мс",
+            Duration.between(Instant.now().minusMillis(0), Instant.now()).toMillis());
     }
 
     private static AlertManager buildAlertManager() {
@@ -91,121 +255,11 @@ public class Main {
             return new TelegramAlertManager(token, chat);
         }
         return new AlertManager() {
-            public void send(String text) {
+            @Override public void send(String text) {
             }
 
-            public void sendImage(File image, String caption) {
+            @Override public void sendImage(File image, String caption) {
             }
         };
-    }
-
-    public static LogResult getLogResult(
-        Config config,
-        String path,
-        String filterField,
-        String filterValue,
-        String from,
-        String to
-    ) {
-        NginxLogParser parser = new NginxLogParser();
-        LogAnalyzer analyzer = new LogAnalyzer();
-
-        try {
-            Reader reader = ReaderSelector.typeSelector(path);
-            Stream<String> lines = reader.read(path);
-            List<LogRecord> logs = parser.parse(lines);
-
-            if (filterField != null && filterValue != null) {
-                logs = analyzer.applyFilter(logs, new FieldLogFilter(filterField, filterValue));
-            }
-            if (config.filterIp() != null) {
-                logs = analyzer.applyFilter(logs, new FieldLogFilter("remoteAddr", config.filterIp()));
-            }
-            if (from != null && to != null) {
-                logs = analyzer.applyFilter(logs,
-                    new DateRangeLogFilter(LocalDateTime.parse(from), LocalDateTime.parse(to)));
-            }
-
-            if (logs.isEmpty()) {
-                log.warn("⚠ После фильтрации логов не осталось.");
-                return null;
-            }
-
-            // Топ IP по запросам и ошибкам
-            IpAnalyzer ipAnalyzer = new IpAnalyzer();
-            Map<String, Long> requestsPerIp = ipAnalyzer.countRequestsPerIp(logs);
-            Map<String, Long> errorsPerIp = ipAnalyzer.countErrorsPerIp(logs);
-
-            log.info("📌 Топ 5 IP-адресов по количеству запросов:");
-            requestsPerIp.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .limit(5)
-                .forEach(e -> log.info("{} → {} запросов", e.getKey(), e.getValue()));
-
-            log.info("📌 Топ 5 IP-адресов по количеству ошибок:");
-            errorsPerIp.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .limit(5)
-                .forEach(e -> log.info("{} → {} ошибок", e.getKey(), e.getValue()));
-
-            // Сбор метрик
-            MetricsAggregator aggregator = new MetricsAggregator(Duration.ofSeconds(20));
-            List<MetricSnapshot> snapshots = aggregator.aggregate(logs);
-
-            AnomalyService anomalySvc = AnomalyConfigurator.defaultService();
-            Map<String, List<Anomaly>> anomalies = anomalySvc.detectAll(snapshots);
-
-            // Выявление подозрительных IP
-            SuspiciousIpDetector detector = new SuspiciousIpDetector(Duration.ofSeconds(20), 10);
-            Set<String> suspiciousIps = detector.detect(logs);
-            if (!suspiciousIps.isEmpty()) {
-                log.warn("🚨 Подозрительная активность от IP:");
-                suspiciousIps.forEach(ip -> log.warn(" - {}", ip));
-            }
-
-            // Telegram уведомление
-            AlertManager alert = buildAlertManager();
-            if (!anomalies.isEmpty() || !suspiciousIps.isEmpty()) {
-                StringBuilder msg = new StringBuilder("*NginxLogAnalyzer*: ");
-                if (!anomalies.isEmpty()) {
-                    msg.append("обнаружены аномалии\n");
-                    anomalies.forEach(
-                        (m, l) -> msg.append("• ").append(m).append(" — ").append(l.size()).append(" шт.\n"));
-                }
-                if (!suspiciousIps.isEmpty()) {
-                    msg.append("\n🚨 Подозрительные IP:\n");
-                    suspiciousIps.forEach(ip -> msg.append("• ").append(ip).append("\n"));
-                }
-                alert.send(msg.toString());
-            }
-
-            // График
-            try {
-                String pathToChart = "src/main/resources/static/traffic_errors.png";
-                new ChartGenerator().generateTimeSeriesChart(snapshots, pathToChart);
-                File chart = new File(pathToChart);
-                if (chart.exists()) {
-                    alert.sendImage(chart, "📊 График трафика и ошибок");
-                    log.info("📊 График сохранён: {}", pathToChart);
-                }
-            } catch (IOException e) {
-                log.error("Ошибка при генерации графика", e);
-            }
-
-            return new LogResult(
-                analyzer.countTotalRequests(logs),
-                analyzer.averageResponseSize(logs),
-                analyzer.countResources(logs),
-                analyzer.countStatusCodes(logs),
-                analyzer.percentile95ResponseSize(logs),
-                anomalies,
-                suspiciousIps
-            );
-
-        } catch (Exception e) {
-            log.error("Ошибка анализа логов", e);
-        }
-
-        return null;
     }
 }

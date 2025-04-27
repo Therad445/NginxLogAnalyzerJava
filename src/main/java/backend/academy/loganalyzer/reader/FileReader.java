@@ -6,8 +6,15 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 public class FileReader implements Reader {
-    @Override
-    public Stream<String> read(String filePathFile) throws IOException {
-        return Files.lines(Path.of(filePathFile));
+    private final Path path;
+
+    public FileReader(String path) {
+        this.path = Path.of(path);
     }
+
+    @Override
+    public Stream<String> read() throws IOException {
+        return Files.lines(path);
+    }
+
 }
