@@ -1,11 +1,9 @@
 package backend.academy.loganalyzer.anomaly;
 
 import backend.academy.loganalyzer.config.Config;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Field;
 import java.util.List;
-
+import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AnomalyConfiguratorTest {
@@ -24,7 +22,7 @@ class AnomalyConfiguratorTest {
     @Test
     void defaultService_configuresZScoreDetectorsCorrectly() throws Exception {
         int expectedWindow = (int) Config.aggregationWindow().getSeconds();
-        double expectedZ   = Config.zThreshold();
+        double expectedZ = Config.zThreshold();
 
         AnomalyService service = AnomalyConfigurator.defaultService();
         ZScoreAnomalyDetector z1 = (ZScoreAnomalyDetector) service.getDetectors().get(0);
@@ -64,7 +62,7 @@ class AnomalyConfiguratorTest {
     @Test
     void defaultService_configuresEwmaDetectorsCorrectly() throws Exception {
         double expectedAlpha = 0.3;
-        double expectedK     = 3.0;
+        double expectedK = 3.0;
 
         AnomalyService service = AnomalyConfigurator.defaultService();
         EwmaAnomalyDetector e1 = (EwmaAnomalyDetector) service.getDetectors().get(1);
