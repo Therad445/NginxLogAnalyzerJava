@@ -1,5 +1,6 @@
 package backend.academy.loganalyzer.alert;
 
+import java.io.IOException;
 import okhttp3.FormBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -8,9 +9,8 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TelegramAlertManagerTest {
 
@@ -51,7 +51,8 @@ class TelegramAlertManagerTest {
                         .build();
 
                     client.newCall(req).execute().close();
-                } catch (IOException ignored) {}
+                } catch (IOException ignored) {
+                }
             }
         };
 

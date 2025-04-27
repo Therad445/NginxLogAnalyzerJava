@@ -8,6 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EwmaAnomalyDetectorTest {
 
+    private static MetricSnapshot ms(String minute, long value) {
+        Instant ts = Instant.parse("2024-01-01T" + minute + ":00Z");
+        return new MetricSnapshot(ts, value, 0, 0.0, 0.0, 0);
+    }
+
     @Test
     void detectsSharpSpikeAboveMean() {
         List<MetricSnapshot> snapshots = List.of(
@@ -72,22 +77,5 @@ class EwmaAnomalyDetectorTest {
             ms -> (double) ms.requests(), 0.3, 1.0);
         List<Anomaly> anomalies = detector.detect(snapshots);
         assertTrue(anomalies.isEmpty());
-    }
-
-//    @Test
-//    void detectsNegativeAnomalyAfterRise() {
-//        List<MetricSnapshot> snapshots = List.of(
-//            ms("00:00", 10), ms("00:01", 15), ms("00:02", 15), ms("00:03", 10)
-//        );
-//        EwmaAnomalyDetector detector = new EwmaAnomalyDetector("reqs/min",
-//            ms -> (double) ms.requests(), 0.4, 1.0);
-//        List<Anomaly> anomalies = detector.detect(snapshots);
-//        assertEquals(1, anomalies.size());
-//        assertEquals(10.0, anomalies.get(0).value());
-//    }
-
-    private static MetricSnapshot ms(String minute, long value) {
-        Instant ts = Instant.parse("2024-01-01T" + minute + ":00Z");
-        return new MetricSnapshot(ts, value, 0, 0.0);
     }
 }

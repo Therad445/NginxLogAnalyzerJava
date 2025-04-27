@@ -2,14 +2,14 @@ package backend.academy.loganalyzer.report;
 
 import backend.academy.loganalyzer.anomaly.Anomaly;
 import backend.academy.loganalyzer.template.LogResult;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MarkdownFormatTest {
 
