@@ -1,131 +1,91 @@
 package backend.academy.loganalyzer.reader;
 
+import backend.academy.loganalyzer.config.Config;
 import java.io.IOException;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ReaderSelectorTest {
 
-    private static final String GOOGLE_COM = "https://www.google.com";
-    private static final String NODIRECT = "nodirect";
-    private static final String NGINX_LOGS_TXT = "nginx_logs.txt";
-
     @Test
-    void typeSelector_IsURL() throws IOException {
-        //Arrange
-        String path = GOOGLE_COM;
-        Reader readerValid = new URLReader();
-        //Act
-        Reader readerSelected = ReaderSelector.typeSelector(path);
-        //Assert
-        assertEquals(readerValid.getClass(), readerSelected.getClass());
+    void selectFileInBatchMode() throws IOException {
+        Config cfg = new Config();
+        cfg.source("file");
+        cfg.streamingMode(false);
+        cfg.path("some/path.log");
+
+        Reader r = ReaderSelector.select(cfg);
+        assertThat(r).isInstanceOf(FileReader.class);
     }
 
     @Test
-    void typeSelector_IsPath() throws IOException {
-        //Arrange
-        String path = NGINX_LOGS_TXT;
-        Reader readerValid = new FileReader();
-        //Act
-        Reader readerSelected = ReaderSelector.typeSelector(path);
-        //Assert
-        assertEquals(readerValid.getClass(), readerSelected.getClass());
+    void selectFileInStreamMode() throws IOException {
+        Config cfg = new Config();
+        cfg.source("file");
+        cfg.streamingMode(true);
+        cfg.path("some/path.log");
+
+        Reader r = ReaderSelector.select(cfg);
+        assertThat(r).isInstanceOf(FileTailLogReader.class);
     }
 
     @Test
-    void typeSelector_IsInvalid() throws IOException {
-        //Arrange
-        String path = "!@!#";
-        Reader readerValid = new FileReader();
-        //Act
-        Exception exception = assertThrows(NoSuchFileException.class, () -> ReaderSelector.typeSelector(path));
-        //Assert
-        assertEquals("Нет файла по данному пути: " + Path.of(path).toAbsolutePath(), exception.getMessage());
+    void selectUrlInBatchMode() throws IOException {
+        Config cfg = new Config();
+        cfg.source("url");
+        cfg.streamingMode(false);
+        cfg.path("http://example.com/log");
+
+        Reader r = ReaderSelector.select(cfg);
+        assertThat(r).isInstanceOf(URLReader.class);
     }
 
     @Test
-    void isUrl_IsValid() {
-        //Arrange
-        String url = GOOGLE_COM;
-        //Act
-        boolean result = ReaderSelector.isUrl(url);
-        //Assert
-        assertTrue(result);
+    void selectUrlInStreamModeThrows() {
+        Config cfg = new Config();
+        cfg.source("url");
+        cfg.streamingMode(true);
+        cfg.path("http://example.com/log");
+
+        assertThatThrownBy(() -> ReaderSelector.select(cfg))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("URL не поддерживает --stream");
     }
 
     @Test
-    void isUrl_IsInvalid() {
-        //Arrange
-        String url = GOOGLE_COM;
-        //Act
-        boolean result = ReaderSelector.isUrl(url);
-        //Assert
-        assertTrue(result);
+    void selectKafkaInStreamMode() throws IOException {
+        Config cfg = new Config();
+        cfg.source("kafka");
+        cfg.streamingMode(true);
+        cfg.kafkaBootstrapServers("localhost:9092");
+        cfg.kafkaTopic("topic");
+        cfg.kafkaGroupId("gid");
+
+        Reader r = ReaderSelector.select(cfg);
+        assertThat(r).isInstanceOf(KafkaLogReader.class);
     }
 
     @Test
-    void checkPath_IsValid() throws NoSuchFileException {
-        //Arrange
-        String path = NGINX_LOGS_TXT;
-        //Act
-        boolean result = ReaderSelector.checkPath(path);
-        //Assert
-        assertTrue(result);
+    void selectKafkaInBatchModeThrows() {
+        Config cfg = new Config();
+        cfg.source("kafka");
+        cfg.streamingMode(false);
+
+        assertThatThrownBy(() -> ReaderSelector.select(cfg))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Kafka только в streaming-режиме");
     }
 
     @Test
-    void checkPath_IsValidAbsolutePath() throws NoSuchFileException {
-        //Arrange
-        String path = NGINX_LOGS_TXT;
-        Path filePath = Path.of(path);
-        String absolutePath = filePath.toAbsolutePath().toString();
-        //Act
-        boolean result = ReaderSelector.checkPath(absolutePath);
-        //Assert
-        assertTrue(result);
-    }
+    void selectUnknownSourceThrows() {
+        Config cfg = new Config();
+        cfg.source("unknown");
+        cfg.streamingMode(false);
+        cfg.path("foo");
 
-    @Test
-    void checkPath_IsInvalid() throws NoSuchFileException {
-        //Arrange
-        String path = NODIRECT;
-        //Act
-        Exception exception = assertThrows(NoSuchFileException.class, () -> ReaderSelector.checkPath(path));
-        //Assert
-        assertEquals("Нет файла по данному пути: " + Path.of(path).toAbsolutePath(), exception.getMessage());
+        assertThatThrownBy(() -> ReaderSelector.select(cfg))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Unknown source");
     }
-
-    @Test
-    void checkPath_IsInvalidAbsolutePath() throws NoSuchFileException {
-        //Arrange
-        String path = NODIRECT;
-        Path filePath = Path.of(path);
-        String absolutePath = filePath.toAbsolutePath().toString();
-        //Act
-        Exception exception = assertThrows(NoSuchFileException.class, () -> ReaderSelector.checkPath(path));
-        //Assert
-        assertEquals("Нет файла по данному пути: " + Path.of(path).toAbsolutePath(), exception.getMessage());
-    }
-
-    @Test
-    void isUrl_WithoutScheme() {
-        assertFalse(ReaderSelector.isUrl("www.google.com"));
-    }
-
-    @Test
-    void isUrl_WithSubdomain() {
-        assertTrue(ReaderSelector.isUrl("https://sub.example.com"));
-    }
-
-    @Test
-    void checkPath_NullValue() {
-        Exception exception = assertThrows(NullPointerException.class,
-            () -> ReaderSelector.checkPath(null));
-    }
-
 }

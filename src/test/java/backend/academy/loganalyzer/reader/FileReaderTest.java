@@ -4,43 +4,50 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FileReaderTest {
 
-    private static final String NODIRECT = "nodirect";
-    private static final String EMPTY_FILE = "src/main/resources/empty.txt";
-
     @Test
-    public void testReadValidFile() throws IOException {
-        // Arrange
-        Reader fileReader = new FileReader();
-        String testFilePath = EMPTY_FILE;
-        Path path = Path.of(testFilePath);
-        Files.write(path, List.of("Line 1", "Line 2", "Line 3"));
+    void readExistingFileWithUtilityMethod() throws IOException {
+        Path temp = Files.createTempFile("log", ".txt");
+        List<String> lines = List.of("one", "two", "three");
+        Files.write(temp, lines);
 
-        // Act
-        List<String> lines = fileReader.read(testFilePath).toList();
-
-        // Assert
-        assertFalse(lines.isEmpty());
-        assertEquals(3, lines.size());
-        assertEquals("Line 1", lines.get(0));
-        assertEquals("Line 3", lines.get(2));
-        Files.delete(path);
+        FileReader fr = new FileReader(temp.toString());
+        try (Stream<String> stream = fr.read()) {
+            List<String> result = stream.toList();
+            assertThat(result).containsExactlyElementsOf(lines);
+        }
     }
 
     @Test
-    public void testReadNonExistentFile() {
-        // Arrange
-        FileReader fileReader = new FileReader();
-        String invalidFilePath = NODIRECT;
+    void readExistingFileWithConstructor() throws IOException {
+        Path temp = Files.createTempFile("log", ".txt");
+        List<String> lines = List.of("α", "β");
+        Files.write(temp, lines);
 
-        // Act & Assert
-        assertThrows(IOException.class, () -> fileReader.read(invalidFilePath).collect(Collectors.toList()));
+        FileReader fr = new FileReader(temp.toString());
+        try (Stream<String> stream = fr.read()) {
+            List<String> result = stream.toList();
+            assertThat(result).containsExactly("α", "β");
+        }
+    }
+
+    @Test
+    void readNonexistentThrowsIOException() {
+        FileReader fr = new FileReader("no-such-file.log");
+        assertThatThrownBy(fr::read)
+            .isInstanceOf(IOException.class);
+    }
+
+    @Test
+    void readWithoutPathThrowsException() {
+        FileReader fr = new FileReader("");
+        assertThatThrownBy(fr::read)
+            .isInstanceOf(IOException.class);
     }
 }

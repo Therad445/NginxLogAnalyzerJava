@@ -18,7 +18,7 @@ class MetricsAggregatorTest {
             log("00:01:02"), log("00:01:45"),                  // 2 минута
             log("00:02:10")                                     // 3 минута
         );
-        MetricsAggregator aggregator = new MetricsAggregator(Duration.ofMinutes(1));
+        MetricsAggregator aggregator = new MetricsAggregator(Duration.ofMinutes(1), 5);
         List<MetricSnapshot> result = aggregator.aggregate(logs);
 
         assertEquals(3, result.size());
@@ -33,7 +33,7 @@ class MetricsAggregatorTest {
             log("00:00:01", 200), log("00:00:15", 500), log("00:00:55", 404),
             log("00:01:02", 502), log("00:01:45", 200)
         );
-        MetricsAggregator aggregator = new MetricsAggregator(Duration.ofMinutes(1));
+        MetricsAggregator aggregator = new MetricsAggregator(Duration.ofMinutes(1), 5);
         List<MetricSnapshot> result = aggregator.aggregate(logs);
 
         assertEquals(2, result.get(0).errors()); // 500, 404

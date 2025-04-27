@@ -8,6 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ZScoreAnomalyDetectorTest {
 
+    private static MetricSnapshot ms(String minute) {
+        return ms(minute, 10);
+    }
+
+    private static MetricSnapshot ms(String minute, long value) {
+        Instant ts = Instant.parse("2024-01-01T" + minute + ":00Z");
+        return new MetricSnapshot(ts, value, 0, 0.0, 0.0, 0);
+    }
+
     @Test
     void detectsClearHighOutlierWhenStdPositive() {
         List<MetricSnapshot> snapshots = List.of(
@@ -73,14 +82,5 @@ class ZScoreAnomalyDetectorTest {
         assertEquals(2, anomalies.size());
         assertTrue(anomalies.get(0).value() > 80);
         assertTrue(anomalies.get(1).value() > 80);
-    }
-
-    private static MetricSnapshot ms(String minute) {
-        return ms(minute, 10);
-    }
-
-    private static MetricSnapshot ms(String minute, long value) {
-        Instant ts = Instant.parse("2024-01-01T" + minute + ":00Z");
-        return new MetricSnapshot(ts, value, 0, 0.0);
     }
 }

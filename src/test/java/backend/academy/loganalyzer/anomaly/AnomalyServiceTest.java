@@ -9,6 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnomalyServiceTest {
 
+    private static MetricSnapshot ms(String minute, long value) {
+        Instant ts = Instant.parse("2024-01-01T" + minute + ":00Z");
+        return new MetricSnapshot(ts, value, 0, 0.0, 0.0, 0);
+    }
+
     @Test
     void mergesResultsFromMultipleDetectors() {
         List<MetricSnapshot> snapshots = List.of(
@@ -33,11 +38,6 @@ class AnomalyServiceTest {
         AnomalyService service = new AnomalyService(List.of());
         Map<String, List<Anomaly>> all = service.detectAll(snapshots);
         assertTrue(all.isEmpty());
-    }
-
-    private static MetricSnapshot ms(String minute, long value) {
-        Instant ts = Instant.parse("2024-01-01T" + minute + ":00Z");
-        return new MetricSnapshot(ts, value, 0, 0.0);
     }
 }
 
