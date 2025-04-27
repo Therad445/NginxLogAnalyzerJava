@@ -89,6 +89,12 @@
     </properties>
 
     <dependencies>
+        <!-- Starter test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- CLI -->
         <dependency>
             <groupId>commons-cli</groupId>
