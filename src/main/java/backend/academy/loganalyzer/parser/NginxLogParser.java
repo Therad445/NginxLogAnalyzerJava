@@ -47,22 +47,34 @@ public class NginxLogParser {
     private Optional<LogRecord> parseLine(String line) {
         Matcher matcher = LOG_PATTERN.matcher(line);
         if (matcher.matches()) {
-            LogRecord logRecord = new LogRecord();
-            logRecord.remoteAddr(matcher.group("ip"));
-            logRecord.request(matcher.group("request"));
-            logRecord.status(Integer.parseInt(matcher.group("status")));
-            logRecord.bodyBytesSent(Integer.parseInt(matcher.group("bytes")));
-            logRecord.userAgent(matcher.group("agent"));
-            logRecord.method(matcher.group("method"));
+            String remoteAddr = matcher.group("ip");
+            String remoteUser = matcher.group("user");
             String timeStr = matcher.group("time");
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH);
-            ZonedDateTime zdt = ZonedDateTime.parse(timeStr, fmt);
-            logRecord.timestamp(zdt.toLocalDateTime());
+            String method = matcher.group("method");
+            String request = matcher.group("request");
+            int status = Integer.parseInt(matcher.group("status"));
+            long bodyBytesSent = Long.parseLong(matcher.group("bytes"));
+            String httpReferer = "-"; // Если в логах нет реферера, ставим заглушку
+            String userAgent = matcher.group("agent");
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH);
+            ZonedDateTime zonedDateTime = ZonedDateTime.parse(timeStr, formatter);
+
+            LogRecord logRecord = new LogRecord(
+                remoteAddr,
+                remoteUser,
+                zonedDateTime.toLocalDateTime(),
+                method,
+                request,
+                status,
+                bodyBytesSent,
+                httpReferer,
+                userAgent,
+                zonedDateTime.toLocalDateTime()
+            );
+
             return Optional.of(logRecord);
         }
         return Optional.empty();
     }
-
 }
-
-

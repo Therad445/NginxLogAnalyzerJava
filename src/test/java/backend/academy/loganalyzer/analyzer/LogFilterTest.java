@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,7 +13,6 @@ class LogFilterTest {
 
     @Test
     void filter_ShouldReturnFilteredRecords_WhenConditionIsMet() {
-
         List<LogRecord> records = List.of(
             createLogRecord("127.0.0.1", "INFO", "Test log 1"),
             createLogRecord("127.0.0.2", "ERROR", "Test log 2"),
@@ -32,7 +32,6 @@ class LogFilterTest {
 
     @Test
     void filter_ShouldReturnEmptyList_WhenNoRecordsMatch() {
-
         List<LogRecord> records = List.of(
             createLogRecord("127.0.0.1", "INFO", "Test log 1"),
             createLogRecord("127.0.0.2", "INFO", "Test log 2")
@@ -49,7 +48,6 @@ class LogFilterTest {
 
     @Test
     void filter_ShouldHandleEmptyList() {
-
         List<LogRecord> records = List.of();
 
         LogFilter filter = recs -> recs.stream()
@@ -62,11 +60,18 @@ class LogFilterTest {
     }
 
     private LogRecord createLogRecord(String remoteAddr, String method, String request) {
-        LogRecord record = new LogRecord();
-        record.remoteAddr(remoteAddr);
-        record.method(method);
-        record.request(request);
-        record.timestamp(LocalDateTime.now().minusDays(1));
-        return record;
+        LocalDateTime now = LocalDateTime.now().minusDays(1);
+        return new LogRecord(
+            remoteAddr,
+            "-",
+            now,
+            method,
+            request,
+            200,
+            500L,
+            "-",
+            "Mozilla",
+            now
+        );
     }
 }

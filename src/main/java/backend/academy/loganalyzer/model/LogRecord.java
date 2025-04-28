@@ -1,20 +1,22 @@
 package backend.academy.loganalyzer.model;
 
 import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
-public class LogRecord {
-    private String remoteAddr;
-    private String remoteUser;
-    private LocalDateTime timeLocal;
-    private String method;
-    private String request;
-    private int status;
-    private long bodyBytesSent;
-    private String httpReferer;
-    private String userAgent;
-    private LocalDateTime timestamp;
+public record LogRecord(String remoteAddr, String remoteUser, LocalDateTime timeLocal, String method, String request,
+                        int status, long bodyBytesSent, String httpReferer, String userAgent, LocalDateTime timestamp) {
+
+    @Override
+    public String toString() {
+        return "LogRecord[" +
+            "remoteAddr=" + remoteAddr + ", " +
+            "remoteUser=" + remoteUser + ", " +
+            "timeLocal=" + timeLocal + ", " +
+            "method=" + method + ", " +
+            "request=" + request + ", " +
+            "status=" + status + ", " +
+            "bodyBytesSent=" + bodyBytesSent + ", " +
+            "httpReferer=" + httpReferer + ", " +
+            "userAgent=" + userAgent + ", " +
+            "timestamp=" + timestamp + ']';
+    }
 }

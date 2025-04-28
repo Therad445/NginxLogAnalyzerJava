@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -16,11 +17,8 @@ class DateRangeLogFilterTest {
         LocalDateTime start = LocalDateTime.of(2024, 12, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(2024, 12, 10, 23, 59);
 
-        LogRecord log1 = new LogRecord();
-        log1.timestamp(LocalDateTime.of(2024, 12, 5, 10, 30));
-
-        LogRecord log2 = new LogRecord();
-        log2.timestamp(LocalDateTime.of(2024, 12, 8, 15, 45));
+        LogRecord log1 = createLogRecordWithTimestamp(LocalDateTime.of(2024, 12, 5, 10, 30));
+        LogRecord log2 = createLogRecordWithTimestamp(LocalDateTime.of(2024, 12, 8, 15, 45));
 
         List<LogRecord> logs = Arrays.asList(log1, log2);
         DateRangeLogFilter filter = new DateRangeLogFilter(start, end);
@@ -34,15 +32,11 @@ class DateRangeLogFilterTest {
 
     @Test
     public void testFilterOutsideRange() {
-
         LocalDateTime start = LocalDateTime.of(2024, 12, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(2024, 12, 10, 23, 59);
 
-        LogRecord log1 = new LogRecord();
-        log1.timestamp(LocalDateTime.of(2024, 11, 30, 23, 59));
-
-        LogRecord log2 = new LogRecord();
-        log2.timestamp(LocalDateTime.of(2024, 12, 11, 0, 0));
+        LogRecord log1 = createLogRecordWithTimestamp(LocalDateTime.of(2024, 11, 30, 23, 59));
+        LogRecord log2 = createLogRecordWithTimestamp(LocalDateTime.of(2024, 12, 11, 0, 0));
 
         List<LogRecord> logs = Arrays.asList(log1, log2);
         DateRangeLogFilter filter = new DateRangeLogFilter(start, end);
@@ -54,15 +48,11 @@ class DateRangeLogFilterTest {
 
     @Test
     public void testFilterOnBoundary() {
-
         LocalDateTime start = LocalDateTime.of(2024, 12, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(2024, 12, 10, 23, 59);
 
-        LogRecord log1 = new LogRecord();
-        log1.timestamp(start);
-
-        LogRecord log2 = new LogRecord();
-        log2.timestamp(end);
+        LogRecord log1 = createLogRecordWithTimestamp(start);
+        LogRecord log2 = createLogRecordWithTimestamp(end);
 
         List<LogRecord> logs = Arrays.asList(log1, log2);
         DateRangeLogFilter filter = new DateRangeLogFilter(start, end);
@@ -76,7 +66,6 @@ class DateRangeLogFilterTest {
 
     @Test
     public void testFilterWithEmptyList() {
-
         LocalDateTime start = LocalDateTime.of(2024, 12, 1, 0, 0);
         LocalDateTime end = LocalDateTime.of(2024, 12, 10, 23, 59);
 
@@ -86,5 +75,20 @@ class DateRangeLogFilterTest {
         List<LogRecord> result = filter.filter(logs);
 
         assertTrue(result.isEmpty());
+    }
+
+    private LogRecord createLogRecordWithTimestamp(LocalDateTime timestamp) {
+        return new LogRecord(
+            "127.0.0.1",
+            "-",
+            timestamp,
+            "GET",
+            "/",
+            200,
+            1000L,
+            "-",
+            "Mozilla",
+            timestamp
+        );
     }
 }

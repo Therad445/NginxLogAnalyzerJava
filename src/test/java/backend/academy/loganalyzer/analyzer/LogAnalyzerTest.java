@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class LogAnalyzerTest {
@@ -15,42 +16,9 @@ class LogAnalyzerTest {
 
     @Test
     public void testCountResources() {
-
-        LogRecord log1 = new LogRecord();
-        log1.request("/home");
-        log1.remoteAddr("192.168.1.1");
-        log1.remoteUser("user1");
-        log1.timeLocal(LocalDateTime.now());
-        log1.method("GET");
-        log1.status(200);
-        log1.bodyBytesSent(1500);
-        log1.httpReferer("");
-        log1.userAgent("");
-        log1.timestamp(LocalDateTime.now());
-
-        LogRecord log2 = new LogRecord();
-        log2.request("/login");
-        log2.remoteAddr("192.168.1.2");
-        log2.remoteUser("user2");
-        log2.timeLocal(LocalDateTime.now());
-        log2.method("POST");
-        log2.status(200);
-        log2.bodyBytesSent(1000);
-        log2.httpReferer("");
-        log2.userAgent("");
-        log2.timestamp(LocalDateTime.now());
-
-        LogRecord log3 = new LogRecord();
-        log3.request("/home");
-        log3.remoteAddr("192.168.1.1");
-        log3.remoteUser("user1");
-        log3.timeLocal(LocalDateTime.now());
-        log3.method("GET");
-        log3.status(200);
-        log3.bodyBytesSent(1500);
-        log3.httpReferer("");
-        log3.userAgent("");
-        log3.timestamp(LocalDateTime.now());
+        LogRecord log1 = createLogRecord("192.168.1.1", "user1", "GET", "/home", 200, 1500L);
+        LogRecord log2 = createLogRecord("192.168.1.2", "user2", "POST", "/login", 200, 1000L);
+        LogRecord log3 = createLogRecord("192.168.1.1", "user1", "GET", "/home", 200, 1500L);
 
         List<LogRecord> logs = Arrays.asList(log1, log2, log3);
 
@@ -63,30 +31,8 @@ class LogAnalyzerTest {
 
     @Test
     public void testCountStatusCodes() {
-
-        LogRecord log1 = new LogRecord();
-        log1.request("/home");
-        log1.remoteAddr("192.168.1.1");
-        log1.remoteUser("user1");
-        log1.timeLocal(LocalDateTime.now());
-        log1.method("GET");
-        log1.status(200);
-        log1.bodyBytesSent(1500);
-        log1.httpReferer("");
-        log1.userAgent("");
-        log1.timestamp(LocalDateTime.now());
-
-        LogRecord log2 = new LogRecord();
-        log2.request("/login");
-        log2.remoteAddr("192.168.1.2");
-        log2.remoteUser("user2");
-        log2.timeLocal(LocalDateTime.now());
-        log2.method("POST");
-        log2.status(404);
-        log2.bodyBytesSent(1000);
-        log2.httpReferer("");
-        log2.userAgent("");
-        log2.timestamp(LocalDateTime.now());
+        LogRecord log1 = createLogRecord("192.168.1.1", "user1", "GET", "/home", 200, 1500L);
+        LogRecord log2 = createLogRecord("192.168.1.2", "user2", "POST", "/login", 404, 1000L);
 
         List<LogRecord> logs = Arrays.asList(log1, log2, log1);
 
@@ -99,30 +45,8 @@ class LogAnalyzerTest {
 
     @Test
     public void testAverageResponseSize() {
-
-        LogRecord log1 = new LogRecord();
-        log1.request("/home");
-        log1.remoteAddr("192.168.1.1");
-        log1.remoteUser("user1");
-        log1.timeLocal(LocalDateTime.now());
-        log1.method("GET");
-        log1.status(200);
-        log1.bodyBytesSent(1500);
-        log1.httpReferer("");
-        log1.userAgent("");
-        log1.timestamp(LocalDateTime.now());
-
-        LogRecord log2 = new LogRecord();
-        log2.request("/login");
-        log2.remoteAddr("192.168.1.2");
-        log2.remoteUser("user2");
-        log2.timeLocal(LocalDateTime.now());
-        log2.method("POST");
-        log2.status(200);
-        log2.bodyBytesSent(1000);
-        log2.httpReferer("");
-        log2.userAgent("");
-        log2.timestamp(LocalDateTime.now());
+        LogRecord log1 = createLogRecord("192.168.1.1", "user1", "GET", "/home", 200, 1500L);
+        LogRecord log2 = createLogRecord("192.168.1.2", "user2", "POST", "/login", 200, 1000L);
 
         List<LogRecord> logs = Arrays.asList(log1, log2);
 
@@ -133,30 +57,8 @@ class LogAnalyzerTest {
 
     @Test
     public void testCountTotalRequests() {
-
-        LogRecord log1 = new LogRecord();
-        log1.request("/home");
-        log1.remoteAddr("192.168.1.1");
-        log1.remoteUser("user1");
-        log1.timeLocal(LocalDateTime.now());
-        log1.method("GET");
-        log1.status(200);
-        log1.bodyBytesSent(1500);
-        log1.httpReferer("");
-        log1.userAgent("");
-        log1.timestamp(LocalDateTime.now());
-
-        LogRecord log2 = new LogRecord();
-        log2.request("/login");
-        log2.remoteAddr("192.168.1.2");
-        log2.remoteUser("user2");
-        log2.timeLocal(LocalDateTime.now());
-        log2.method("POST");
-        log2.status(200);
-        log2.bodyBytesSent(1000);
-        log2.httpReferer("");
-        log2.userAgent("");
-        log2.timestamp(LocalDateTime.now());
+        LogRecord log1 = createLogRecord("192.168.1.1", "user1", "GET", "/home", 200, 1500L);
+        LogRecord log2 = createLogRecord("192.168.1.2", "user2", "POST", "/login", 200, 1000L);
 
         List<LogRecord> logs = Arrays.asList(log1, log2);
 
@@ -167,30 +69,8 @@ class LogAnalyzerTest {
 
     @Test
     public void testApplyFilter() {
-
-        LogRecord log1 = new LogRecord();
-        log1.request("/home");
-        log1.remoteAddr("192.168.1.1");
-        log1.remoteUser("user1");
-        log1.timeLocal(LocalDateTime.now());
-        log1.method("GET");
-        log1.status(200);
-        log1.bodyBytesSent(1500);
-        log1.httpReferer("");
-        log1.userAgent("");
-        log1.timestamp(LocalDateTime.now());
-
-        LogRecord log2 = new LogRecord();
-        log2.request("/login");
-        log2.remoteAddr("192.168.1.2");
-        log2.remoteUser("user2");
-        log2.timeLocal(LocalDateTime.now());
-        log2.method("POST");
-        log2.status(200);
-        log2.bodyBytesSent(1000);
-        log2.httpReferer("");
-        log2.userAgent("");
-        log2.timestamp(LocalDateTime.now());
+        LogRecord log1 = createLogRecord("192.168.1.1", "user1", "GET", "/home", 200, 1500L);
+        LogRecord log2 = createLogRecord("192.168.1.2", "user2", "POST", "/login", 200, 1000L);
 
         List<LogRecord> logs = Arrays.asList(log1, log2);
 
@@ -205,42 +85,9 @@ class LogAnalyzerTest {
 
     @Test
     public void testPercentile95ResponseSize() {
-
-        LogRecord log1 = new LogRecord();
-        log1.request("/home");
-        log1.remoteAddr("192.168.1.1");
-        log1.remoteUser("user1");
-        log1.timeLocal(LocalDateTime.now());
-        log1.method("GET");
-        log1.status(200);
-        log1.bodyBytesSent(1500);
-        log1.httpReferer("");
-        log1.userAgent("");
-        log1.timestamp(LocalDateTime.now());
-
-        LogRecord log2 = new LogRecord();
-        log2.request("/login");
-        log2.remoteAddr("192.168.1.2");
-        log2.remoteUser("user2");
-        log2.timeLocal(LocalDateTime.now());
-        log2.method("POST");
-        log2.status(200);
-        log2.bodyBytesSent(1000);
-        log2.httpReferer("");
-        log2.userAgent("");
-        log2.timestamp(LocalDateTime.now());
-
-        LogRecord log3 = new LogRecord();
-        log3.request("/home");
-        log3.remoteAddr("192.168.1.3");
-        log3.remoteUser("user3");
-        log3.timeLocal(LocalDateTime.now());
-        log3.method("GET");
-        log3.status(200);
-        log3.bodyBytesSent(2000);
-        log3.httpReferer("");
-        log3.userAgent("");
-        log3.timestamp(LocalDateTime.now());
+        LogRecord log1 = createLogRecord("192.168.1.1", "user1", "GET", "/home", 200, 1500L);
+        LogRecord log2 = createLogRecord("192.168.1.2", "user2", "POST", "/login", 200, 1000L);
+        LogRecord log3 = createLogRecord("192.168.1.3", "user3", "GET", "/home", 200, 2000L);
 
         List<LogRecord> logs = Arrays.asList(log1, log2, log3);
 
@@ -251,25 +98,37 @@ class LogAnalyzerTest {
 
     @Test
     public void testPercentile95WithEmptyList() {
-
         List<LogRecord> logs = Collections.emptyList();
-        LogAnalyzer analyzer = new LogAnalyzer();
 
-        double result = analyzer.percentile95ResponseSize(logs);
+        double result = logAnalyzer.percentile95ResponseSize(logs);
 
         assertEquals(0.0, result);
     }
 
     @Test
     public void testPercentile95WithOneElement() {
+        LogRecord log = createLogRecord("192.168.1.1", "user1", "GET", "/single", 200, 500L);
 
-        LogRecord log = new LogRecord();
-        log.bodyBytesSent(500L);
         List<LogRecord> logs = List.of(log);
-        LogAnalyzer analyzer = new LogAnalyzer();
 
-        double result = analyzer.percentile95ResponseSize(logs);
+        double result = logAnalyzer.percentile95ResponseSize(logs);
 
         assertEquals(500.0, result);
+    }
+
+    private LogRecord createLogRecord(String remoteAddr, String remoteUser, String method, String request, int status, long bodyBytesSent) {
+        LocalDateTime now = LocalDateTime.now();
+        return new LogRecord(
+            remoteAddr,
+            remoteUser,
+            now,
+            method,
+            request,
+            status,
+            bodyBytesSent,
+            "-",
+            "Mozilla",
+            now
+        );
     }
 }
