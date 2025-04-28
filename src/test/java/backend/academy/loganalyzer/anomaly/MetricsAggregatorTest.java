@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+import static backend.academy.loganalyzer.model.HttpMethod.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MetricsAggregatorTest {
@@ -49,13 +50,12 @@ class MetricsAggregatorTest {
             "127.0.0.1",
             "-",
             ldt,
-            "GET",
+            GET,
             "/test",
             status,
             1000L,
             "-",
-            "Mozilla",
-            ldt
+            "Mozilla"
         );
     }
 }

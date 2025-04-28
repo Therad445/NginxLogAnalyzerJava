@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+import static backend.academy.loganalyzer.model.HttpMethod.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -82,13 +83,12 @@ class DateRangeLogFilterTest {
             "127.0.0.1",
             "-",
             timestamp,
-            "GET",
+            GET,
             "/",
             200,
             1000L,
             "-",
-            "Mozilla",
-            timestamp
+            "Mozilla"
         );
     }
 }

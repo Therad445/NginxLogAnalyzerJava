@@ -1,5 +1,6 @@
 package backend.academy.loganalyzer.parser;
 
+import backend.academy.loganalyzer.model.HttpMethod;
 import backend.academy.loganalyzer.model.LogRecord;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -50,11 +51,10 @@ public class NginxLogParser {
             String remoteAddr = matcher.group("ip");
             String remoteUser = matcher.group("user");
             String timeStr = matcher.group("time");
-            String method = matcher.group("method");
+            String methodStr = matcher.group("method");
             String request = matcher.group("request");
             int status = Integer.parseInt(matcher.group("status"));
             long bodyBytesSent = Long.parseLong(matcher.group("bytes"));
-            String httpReferer = "-"; // Если в логах нет реферера, ставим заглушку
             String userAgent = matcher.group("agent");
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH);
@@ -62,19 +62,19 @@ public class NginxLogParser {
 
             LogRecord logRecord = new LogRecord(
                 remoteAddr,
-                remoteUser,
+                "-".equals(remoteUser) ? null : remoteUser,
                 zonedDateTime.toLocalDateTime(),
-                method,
+                HttpMethod.fromString(methodStr),
                 request,
                 status,
                 bodyBytesSent,
-                httpReferer,
-                userAgent,
-                zonedDateTime.toLocalDateTime()
+                null,
+                userAgent
             );
 
             return Optional.of(logRecord);
         }
         return Optional.empty();
     }
+
 }
