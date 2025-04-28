@@ -2,11 +2,10 @@ package backend.academy.loganalyzer.anomaly;
 
 import backend.academy.loganalyzer.model.LogRecord;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MetricsAggregatorTest {
@@ -46,10 +45,17 @@ class MetricsAggregatorTest {
 
     private LogRecord log(String time, int status) {
         LocalDateTime ldt = LocalDateTime.parse("2024-01-01T" + time);
-        Instant timestamp = ldt.toInstant(ZoneOffset.UTC);
-        LogRecord rec = new LogRecord();
-        rec.timestamp(ldt);
-        rec.status(status);
-        return rec;
+        return new LogRecord(
+            "127.0.0.1",
+            "-",
+            ldt,
+            "GET",
+            "/test",
+            status,
+            1000L,
+            "-",
+            "Mozilla",
+            ldt
+        );
     }
 }
