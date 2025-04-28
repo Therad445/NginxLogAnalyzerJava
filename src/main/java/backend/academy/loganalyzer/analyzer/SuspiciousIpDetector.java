@@ -1,6 +1,6 @@
 package backend.academy.loganalyzer.analyzer;
 
-import backend.academy.loganalyzer.template.LogRecord;
+import backend.academy.loganalyzer.model.LogRecord;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;

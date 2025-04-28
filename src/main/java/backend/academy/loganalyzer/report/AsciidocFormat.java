@@ -1,6 +1,6 @@
 package backend.academy.loganalyzer.report;
 
-import backend.academy.loganalyzer.template.LogResult;
+import backend.academy.loganalyzer.model.LogResult;
 
 public class AsciidocFormat implements LogReportFormat {
 

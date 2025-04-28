@@ -1,6 +1,6 @@
 package backend.academy.loganalyzer.parser;
 
-import backend.academy.loganalyzer.template.LogRecord;
+import backend.academy.loganalyzer.model.LogRecord;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;

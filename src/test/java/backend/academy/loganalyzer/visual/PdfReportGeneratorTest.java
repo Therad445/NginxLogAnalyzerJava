@@ -1,7 +1,7 @@
 package backend.academy.loganalyzer.visual;
 
 import backend.academy.loganalyzer.anomaly.Anomaly;
-import backend.academy.loganalyzer.template.LogResult;
+import backend.academy.loganalyzer.model.LogResult;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;

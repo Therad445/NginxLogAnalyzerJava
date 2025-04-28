@@ -1,6 +1,6 @@
 package backend.academy.loganalyzer.visual;
 
-import backend.academy.loganalyzer.template.LogResult;
+import backend.academy.loganalyzer.model.LogResult;
 import com.lowagie.text.Document;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;

@@ -1,4 +1,4 @@
-package backend.academy.loganalyzer.template;
+package backend.academy.loganalyzer.model;
 
 import backend.academy.loganalyzer.anomaly.Anomaly;
 import java.util.List;
