@@ -1,5 +1,6 @@
 package backend.academy.loganalyzer.analyzer;
 
+import backend.academy.loganalyzer.model.HttpMethod;
 import backend.academy.loganalyzer.model.LogRecord;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,13 +15,13 @@ class LogFilterTest {
     @Test
     void filter_ShouldReturnFilteredRecords_WhenConditionIsMet() {
         List<LogRecord> records = List.of(
-            createLogRecord("127.0.0.1", "INFO", "Test log 1"),
-            createLogRecord("127.0.0.2", "ERROR", "Test log 2"),
-            createLogRecord("127.0.0.3", "INFO", "Test log 3")
+            createLogRecord("127.0.0.1", HttpMethod.GET, "Test log 1"),
+            createLogRecord("127.0.0.2", HttpMethod.POST, "Test log 2"),
+            createLogRecord("127.0.0.3", HttpMethod.GET, "Test log 3")
         );
 
         LogFilter filter = recs -> recs.stream()
-            .filter(r -> "ERROR".equals(r.method()))
+            .filter(r -> r.method() == HttpMethod.POST)
             .collect(Collectors.toList());
 
         List<LogRecord> result = filter.filter(records);
@@ -33,12 +34,12 @@ class LogFilterTest {
     @Test
     void filter_ShouldReturnEmptyList_WhenNoRecordsMatch() {
         List<LogRecord> records = List.of(
-            createLogRecord("127.0.0.1", "INFO", "Test log 1"),
-            createLogRecord("127.0.0.2", "INFO", "Test log 2")
+            createLogRecord("127.0.0.1", HttpMethod.GET, "Test log 1"),
+            createLogRecord("127.0.0.2", HttpMethod.GET, "Test log 2")
         );
 
         LogFilter filter = recs -> recs.stream()
-            .filter(r -> "ERROR".equals(r.method()))
+            .filter(r -> r.method() == HttpMethod.POST)
             .collect(Collectors.toList());
 
         List<LogRecord> result = filter.filter(records);
@@ -51,7 +52,7 @@ class LogFilterTest {
         List<LogRecord> records = List.of();
 
         LogFilter filter = recs -> recs.stream()
-            .filter(r -> "ERROR".equals(r.method()))
+            .filter(r -> r.method() == HttpMethod.POST)
             .collect(Collectors.toList());
 
         List<LogRecord> result = filter.filter(records);
@@ -59,19 +60,18 @@ class LogFilterTest {
         assertTrue(result.isEmpty());
     }
 
-    private LogRecord createLogRecord(String remoteAddr, String method, String request) {
+    private LogRecord createLogRecord(String remoteAddr, HttpMethod method, String request) {
         LocalDateTime now = LocalDateTime.now().minusDays(1);
         return new LogRecord(
             remoteAddr,
-            "-",
+            null,
             now,
             method,
             request,
             200,
             500L,
-            "-",
-            "Mozilla",
-            now
+            null,
+            "Mozilla"
         );
     }
 }
