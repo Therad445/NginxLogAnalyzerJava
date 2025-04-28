@@ -1,6 +1,6 @@
 package backend.academy.loganalyzer.parser;
 
-import backend.academy.loganalyzer.template.LogRecord;
+import backend.academy.loganalyzer.model.LogRecord;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;

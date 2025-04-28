@@ -1,4 +1,4 @@
-package backend.academy.loganalyzer.template;
+package backend.academy.loganalyzer.model;
 
 import java.time.LocalDateTime;
 import lombok.Getter;

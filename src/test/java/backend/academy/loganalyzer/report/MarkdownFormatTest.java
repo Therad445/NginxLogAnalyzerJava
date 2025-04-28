@@ -1,7 +1,7 @@
 package backend.academy.loganalyzer.report;
 
 import backend.academy.loganalyzer.anomaly.Anomaly;
-import backend.academy.loganalyzer.template.LogResult;
+import backend.academy.loganalyzer.model.LogResult;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
