@@ -567,7 +567,7 @@
                             <manifest>
                                 <addClasspath>true</addClasspath>
                                 <classpathPrefix>lib/</classpathPrefix>
-                                <mainClass>backend.academy.Main</mainClass>
+                                <mainClass>backend.academy.loganalyzer.Main</mainClass>
                             </manifest>
                         </archive>
                     </configuration>

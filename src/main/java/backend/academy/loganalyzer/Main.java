@@ -1,4 +1,4 @@
-package backend.academy;
+package backend.academy.loganalyzer;
 
 import backend.academy.loganalyzer.alert.AlertManager;
 import backend.academy.loganalyzer.alert.TelegramAlertManager;
