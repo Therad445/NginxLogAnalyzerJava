@@ -25,6 +25,10 @@ public class ZScoreAnomalyDetector implements AnomalyDetector {
         this.zThreshold = zThreshold;
     }
 
+    public Function<MetricSnapshot, Double> metricFunction() {
+        return metricExtractor;
+    }
+
     @Override
     public List<Anomaly> detect(List<MetricSnapshot> history) {
         if (history.size() < windowSize + 1) {

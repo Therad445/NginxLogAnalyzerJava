@@ -22,6 +22,10 @@ public class EwmaAnomalyDetector implements AnomalyDetector {
         this.k = k;
     }
 
+    public Function<MetricSnapshot, Double> metricFunction() {
+        return this.metricExtractor;
+    }
+
     @Override public List<Anomaly> detect(List<MetricSnapshot> history) {
         if (history.isEmpty()) {
             return List.of();
