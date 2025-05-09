@@ -1,5 +1,8 @@
 package backend.academy.loganalyzer.model;
 
+import lombok.Getter;
+
+@Getter
 public enum StatusClass {
     INFORMATIONAL(1),
     SUCCESS(2),
@@ -25,4 +28,5 @@ public enum StatusClass {
             default -> UNKNOWN;
         };
     }
+
 }

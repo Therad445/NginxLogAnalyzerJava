@@ -2,6 +2,7 @@ package backend.academy.loganalyzer.alert;
 
 import java.io.File;
 import java.io.IOException;
+
 import lombok.extern.log4j.Log4j2;
 import okhttp3.FormBody;
 import okhttp3.MultipartBody;
@@ -14,13 +15,16 @@ import okhttp3.Response;
 public class TelegramAlertManager implements AlertManager {
 
     protected final OkHttpClient client = new OkHttpClient();
-
     private final String token;
     private final String chatId;
 
     public TelegramAlertManager(String token, String chatId) {
         this.token = token;
         this.chatId = chatId;
+    }
+
+    protected OkHttpClient client() {
+        return client;
     }
 
     @Override
@@ -49,7 +53,6 @@ public class TelegramAlertManager implements AlertManager {
             .add("chat_id", chatId)
             .add("text", markdownText)
             .add("parse_mode", "MarkdownV2")
-
             .build();
 
         Request req = new Request.Builder()
@@ -57,7 +60,7 @@ public class TelegramAlertManager implements AlertManager {
             .post(body)
             .build();
 
-        try (Response response = client.newCall(req).execute()) {
+        try (Response response = client().newCall(req).execute()) {
             if (!response.isSuccessful()) {
                 log.error("❌ Telegram API error: {} → {}", response.code(), response.body().string());
             }
@@ -82,7 +85,7 @@ public class TelegramAlertManager implements AlertManager {
                 .post(requestBody)
                 .build();
 
-            try (Response response = client.newCall(request).execute()) {
+            try (Response response = client().newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     log.error("❌ Telegram photo upload failed: {} → {}", response.code(), response.body().string());
                 } else {
@@ -93,5 +96,4 @@ public class TelegramAlertManager implements AlertManager {
             log.warn("Ошибка при отправке изображения в Telegram", e);
         }
     }
-
 }
