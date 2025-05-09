@@ -2,98 +2,80 @@ package backend.academy.loganalyzer.analyzer;
 
 import backend.academy.loganalyzer.model.HttpMethod;
 import backend.academy.loganalyzer.model.LogRecord;
+import backend.academy.loganalyzer.model.StatusClass;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static backend.academy.loganalyzer.model.HttpMethod.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FieldLogFilterTest {
 
-    @Test
-    public void testFilterByMethod() {
-        LogRecord log1 = createLogRecord(GET, "/home", 200, "Mozilla/5.0");
-        LogRecord log2 = createLogRecord(POST, "/login", 200, "Mozilla/5.0");
+    private List<LogRecord> logs;
 
-        List<LogRecord> logs = Arrays.asList(log1, log2);
+    @BeforeEach
+    void setUp() {
+        logs = List.of(
+            new LogRecord("127.0.0.1", "admin", LocalDateTime.now(), HttpMethod.GET, "/index.html", 200, 512L, "-",
+                "curl/7.81"),
+            new LogRecord("192.168.0.1", "-", LocalDateTime.now(), HttpMethod.POST, "/api/data", 404, 1024L, "-",
+                "PostmanRuntime"),
+            new LogRecord("10.0.0.1", "guest", LocalDateTime.now(), HttpMethod.GET, "/status", 500, 2048L, "-",
+                "Mozilla/5.0")
+        );
+    }
+
+    @Test
+    void filterByMethod_shouldReturnMatching() {
         FieldLogFilter filter = new FieldLogFilter("method", "GET");
-
         List<LogRecord> result = filter.filter(logs);
 
-        assertEquals(1, result.size());
-        assertEquals(GET, result.getFirst().method());
+        assertEquals(2, result.size());
+        assertTrue(result.stream().allMatch(r -> r.method() == HttpMethod.GET));
     }
 
     @Test
-    public void testFilterByAgent() {
-        LogRecord log1 = createLogRecord(GET, "/home", 200, "Mozilla/5.0");
-        LogRecord log2 = createLogRecord(POST, "/login", 200, "Chrome/90.0");
-
-        List<LogRecord> logs = Arrays.asList(log1, log2);
-        FieldLogFilter filter = new FieldLogFilter("agent", "Mozilla");
-
+    void filterByStatus_shouldMatchStatusClass() {
+        FieldLogFilter filter = new FieldLogFilter("status", "404");
         List<LogRecord> result = filter.filter(logs);
 
         assertEquals(1, result.size());
-        assertTrue(result.getFirst().userAgent().startsWith("Mozilla"));
+        assertEquals(StatusClass.CLIENT_ERROR, StatusClass.fromStatusCode(result.get(0).status()));
     }
 
     @Test
-    public void testFilterByStatus() {
-        LogRecord log1 = createLogRecord(GET, "/home", 200, "Mozilla");
-        LogRecord log2 = createLogRecord(POST, "/login", 404, "Mozilla");
-
-        List<LogRecord> logs = Arrays.asList(log1, log2);
-        FieldLogFilter filter = new FieldLogFilter("status", "200");
-
+    void filterByAgent_shouldMatchPrefixIgnoringWildcard() {
+        FieldLogFilter filter = new FieldLogFilter("agent", "curl*");
         List<LogRecord> result = filter.filter(logs);
 
         assertEquals(1, result.size());
-        assertEquals(200, result.getFirst().status());
+        assertTrue(result.get(0).userAgent().startsWith("curl"));
     }
 
     @Test
-    public void testFilterByRequest() {
-        LogRecord log1 = createLogRecord(GET, "/home", 200, "Mozilla");
-        LogRecord log2 = createLogRecord(POST, "/login", 200, "Mozilla");
-
-        List<LogRecord> logs = Arrays.asList(log1, log2);
-        FieldLogFilter filter = new FieldLogFilter("request", "home");
-
+    void filterByRequest_shouldContainSubstring() {
+        FieldLogFilter filter = new FieldLogFilter("request", "/api");
         List<LogRecord> result = filter.filter(logs);
 
         assertEquals(1, result.size());
-        assertTrue(result.getFirst().request().contains("home"));
+        assertTrue(result.get(0).request().contains("/api"));
     }
 
     @Test
-    public void testFilterWithInvalidField() {
-        LogRecord log1 = createLogRecord(GET, "/home", 200, "Mozilla");
+    void filterByRemoteAddr_shouldMatchExactIp() {
+        FieldLogFilter filter = new FieldLogFilter("remoteAddr", "10.0.0.1");
+        List<LogRecord> result = filter.filter(logs);
 
-        List<LogRecord> logs = Collections.singletonList(log1);
-        FieldLogFilter filter = new FieldLogFilter("invalidField", "value");
+        assertEquals(1, result.size());
+        assertEquals("10.0.0.1", result.get(0).remoteAddr());
+    }
 
+    @Test
+    void unknownField_shouldReturnEmpty() {
+        FieldLogFilter filter = new FieldLogFilter("nonexistent", "xxx");
         List<LogRecord> result = filter.filter(logs);
 
         assertTrue(result.isEmpty());
-    }
-
-    private LogRecord createLogRecord(HttpMethod method, String request, int status, String userAgent) {
-        LocalDateTime now = LocalDateTime.now();
-        return new LogRecord(
-            "127.0.0.1",
-            "-",
-            now,
-            method,
-            request,
-            status,
-            1000L,
-            "-",
-            userAgent
-        );
     }
 }

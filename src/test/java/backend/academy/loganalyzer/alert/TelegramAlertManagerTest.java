@@ -1,66 +1,112 @@
 package backend.academy.loganalyzer.alert;
 
+import java.io.File;
 import java.io.IOException;
+import okhttp3.Call;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import org.junit.jupiter.api.AfterEach;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class TelegramAlertManagerTest {
 
-    private MockWebServer server;
+    private OkHttpClient mockClient;
+    private TelegramAlertManager manager;
 
     @BeforeEach
-    void setup() throws IOException {
-        server = new MockWebServer();
-        server.start();
-    }
-
-    @AfterEach
-    void teardown() throws IOException {
-        server.shutdown();
+    void setup() {
+        mockClient = mock(OkHttpClient.class);
+        manager = new TelegramAlertManager("dummy-token", "12345") {
+            @Override
+            protected OkHttpClient client() {
+                return mockClient;
+            }
+        };
     }
 
     @Test
-    void sendsProperlyFormattedMessage() throws Exception {
-        server.enqueue(new MockResponse().setResponseCode(200).setBody("{\"ok\":true}"));
+    void send_shouldEscapeMarkdown_andSendRequest() throws IOException {
+        String text = "*bold* text with _symbols_";
+        Call mockCall = mock(Call.class);
+        Response mockResponse = new Response.Builder()
+            .request(new Request.Builder().url("https://api.telegram.org").build())
+            .protocol(Protocol.HTTP_1_1)
+            .code(200).message("OK")
+            .body(ResponseBody.create("ok", MediaType.parse("application/json")))
+            .build();
 
-        String fakeToken = "123456:test";
-        String fakeChatId = "987654321";
-        String fakeText = "Hello *world*!";
+        when(mockClient.newCall(any())).thenReturn(mockCall);
+        when(mockCall.execute()).thenReturn(mockResponse);
 
-        TelegramAlertManager manager = new TelegramAlertManager(fakeToken, fakeChatId) {
+        manager.send(text);
+
+        ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+        verify(mockClient).newCall(requestCaptor.capture());
+        Request sentRequest = requestCaptor.getValue();
+
+        assertTrue(sentRequest.url().toString().contains("sendMessage"));
+        assertEquals("POST", sentRequest.method());
+
+        RequestBody body = sentRequest.body();
+        assertTrue(body instanceof FormBody);
+        FormBody form = (FormBody) body;
+
+        boolean hasMarkdownV2 = false;
+        for (int i = 0; i < form.size(); i++) {
+            if (form.name(i).equals("parse_mode") && form.value(i).equals("MarkdownV2")) {
+                hasMarkdownV2 = true;
+                break;
+            }
+        }
+
+        assertTrue(hasMarkdownV2, "parse_mode should be MarkdownV2");
+    }
+
+
+    @Test
+    void sendImage_shouldPostMultipartRequest() throws IOException {
+        File dummyFile = File.createTempFile("test-image", ".png");
+        dummyFile.deleteOnExit();
+
+        Call mockCall = mock(Call.class);
+        Response mockResponse = new Response.Builder()
+            .request(new Request.Builder().url("https://api.telegram.org").build())
+            .protocol(Protocol.HTTP_1_1)
+            .code(200).message("OK")
+            .body(ResponseBody.create("ok", MediaType.parse("application/json")))
+            .build();
+
+        when(mockClient.newCall(any())).thenReturn(mockCall);
+        when(mockCall.execute()).thenReturn(mockResponse);
+
+        TelegramAlertManager mgr = new TelegramAlertManager("dummy-token", "12345") {
             @Override
-            public void send(String text) {
-                try {
-                    RequestBody body = new FormBody.Builder()
-                        .add("chat_id", fakeChatId)
-                        .add("text", text)
-                        .add("parse_mode", "MarkdownV2")
-                        .build();
-
-                    Request req = new Request.Builder()
-                        .url(server.url("/bot" + fakeToken + "/sendMessage"))
-                        .post(body)
-                        .build();
-
-                    client.newCall(req).execute().close();
-                } catch (IOException ignored) {
-                }
+            protected OkHttpClient client() {
+                return mockClient;
             }
         };
 
-        manager.send(fakeText);
+        mgr.sendImage(dummyFile, "Test Caption");
 
-        var recorded = server.takeRequest();
-        assertEquals("POST", recorded.getMethod());
-        assertTrue(recorded.getBody().readUtf8().contains("text=Hello%20*world*%21"));
-        assertTrue(recorded.getPath().contains("sendMessage"));
+        ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+        verify(mockClient).newCall(requestCaptor.capture());
+        Request sentRequest = requestCaptor.getValue();
+
+        assertTrue(sentRequest.url().toString().contains("sendPhoto"));
+        assertEquals("POST", sentRequest.method());
+        assertTrue(sentRequest.body().contentType().toString().startsWith("multipart/form-data"));
     }
 }

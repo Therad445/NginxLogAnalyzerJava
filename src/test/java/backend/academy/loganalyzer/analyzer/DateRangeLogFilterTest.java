@@ -6,8 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-
-import static backend.academy.loganalyzer.model.HttpMethod.*;
+import static backend.academy.loganalyzer.model.HttpMethod.GET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
