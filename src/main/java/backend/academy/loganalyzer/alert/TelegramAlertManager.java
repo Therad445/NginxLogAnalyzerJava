@@ -2,7 +2,6 @@ package backend.academy.loganalyzer.alert;
 
 import java.io.File;
 import java.io.IOException;
-
 import lombok.extern.log4j.Log4j2;
 import okhttp3.FormBody;
 import okhttp3.MultipartBody;

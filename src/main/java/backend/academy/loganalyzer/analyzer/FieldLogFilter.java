@@ -30,5 +30,4 @@ public class FieldLogFilter implements LogFilter {
             .collect(Collectors.toList());
     }
 
-
 }
