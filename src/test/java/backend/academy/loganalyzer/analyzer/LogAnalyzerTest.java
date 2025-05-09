@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-
-import static backend.academy.loganalyzer.model.HttpMethod.*;
+import static backend.academy.loganalyzer.model.HttpMethod.GET;
+import static backend.academy.loganalyzer.model.HttpMethod.POST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class LogAnalyzerTest {
@@ -118,7 +118,14 @@ class LogAnalyzerTest {
         assertEquals(500.0, result);
     }
 
-    private LogRecord createLogRecord(String remoteAddr, String remoteUser, HttpMethod method, String request, int status, long bodyBytesSent) {
+    private LogRecord createLogRecord(
+        String remoteAddr,
+        String remoteUser,
+        HttpMethod method,
+        String request,
+        int status,
+        long bodyBytesSent
+    ) {
         LocalDateTime now = LocalDateTime.now();
         return new LogRecord(
             remoteAddr,

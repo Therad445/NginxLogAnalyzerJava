@@ -1,80 +1,122 @@
 package backend.academy.loganalyzer.model;
 
 import backend.academy.loganalyzer.anomaly.Anomaly;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LogResultTest {
 
     @Test
-    void LogResultTest_IsValid() {
-        long totalRequests = 100;
-        double averageResponseSize = 512.5;
-        Map<String, Long> resourceCounts = Map.of("/index.html", 50L, "/about.html", 25L);
-        Map<Integer, Long> statusCodeCounts = Map.of(200, 80L, 404, 20L);
-        double percentile = 201.5;
-        Map<String, List<Anomaly>> anomalies = Map.of();
-        Set<String> suspiciousIps = Set.of();
+    void validInput_shouldCreateCorrectInstance() {
+        Map<String, Long> resources = Map.of("/index.html", 100L);
+        Map<Integer, Long> statusCodes = Map.of(200, 900L);
+        Map<String, List<Anomaly>> anomalies = Map.of(
+            "size", List.of(
+                new Anomaly(Instant.parse("2025-05-09T10:15:30Z"), "size", 1000.0, 500.0, 2.0),
+                new Anomaly(Instant.parse("2025-05-09T10:16:00Z"), "size", 1200.0, 500.0, 2.4)
+            )
+        );
+        Set<String> suspiciousIps = Set.of("192.168.0.1");
 
-        LogResult logResult = new LogResult(
-            totalRequests, averageResponseSize,
-            resourceCounts, statusCodeCounts,
-            percentile, anomalies, suspiciousIps);
+        LogResult result = new LogResult(
+            1000,
+            512.0,
+            resources,
+            statusCodes,
+            1024.0,
+            anomalies,
+            suspiciousIps
+        );
 
-        assertEquals(totalRequests, logResult.totalRequests());
-        assertEquals(averageResponseSize, logResult.averageResponseSize());
-        assertEquals(resourceCounts, logResult.resourceCounts());
-        assertEquals(statusCodeCounts, logResult.statusCodeCounts());
-        assertEquals(percentile, logResult.percentile());
-        assertEquals(anomalies, logResult.anomalies());
+        assertEquals(1000, result.totalRequests());
+        assertEquals(512.0, result.averageResponseSize());
+        assertEquals(resources, result.resourceCounts());
+        assertEquals(statusCodes, result.statusCodeCounts());
+        assertEquals(1024.0, result.percentile());
+        assertEquals(anomalies, result.anomalies());
+        assertEquals(suspiciousIps, result.suspiciousIps());
     }
 
     @Test
-    void totalRequests_IsNegative() {
-        Exception ex = assertThrows(IllegalArgumentException.class,
-            () -> new LogResult(-1, 10,
-                Map.of("x", 1L), Map.of(200, 1L),
-                0.0, Map.of(), Set.of()));
-        assertEquals("totalRequests меньше нуля", ex.getMessage());
+    void nullAnomalies_shouldDefaultToEmptyMap() {
+        LogResult result = new LogResult(
+            500,
+            256.0,
+            Map.of("/ping", 50L),
+            Map.of(404, 50L),
+            512.0,
+            null,
+            Set.of()
+        );
+
+        assertNotNull(result.anomalies());
+        assertTrue(result.anomalies().isEmpty());
     }
 
     @Test
-    void averageResponseSize_IsNegative() {
-        Exception ex = assertThrows(IllegalArgumentException.class,
-            () -> new LogResult(1, -5,
-                Map.of("x", 1L), Map.of(200, 1L),
-                0.0, Map.of(), Set.of()));
-        assertEquals("averageResponseSize меньше нуля", ex.getMessage());
+    void negativeTotalRequests_shouldThrowIllegalArgumentException() {
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
+            new LogResult(-1, 1.0, Map.of(), Map.of(), 0.0, Map.of(), Set.of())
+        );
+        assertEquals("totalRequests меньше нуля", e.getMessage());
     }
 
     @Test
-    void resourceCounts_IsNull() {
-        Exception ex = assertThrows(NullPointerException.class,
-            () -> new LogResult(1, 10,
-                null, Map.of(200, 1L),
-                0.0, Map.of(), Set.of()));
-        assertEquals("resourceCounts пустой", ex.getMessage());
+    void negativeAverageSize_shouldThrowIllegalArgumentException() {
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
+            new LogResult(1, -100.0, Map.of(), Map.of(), 0.0, Map.of(), Set.of())
+        );
+        assertEquals("averageResponseSize меньше нуля", e.getMessage());
     }
 
     @Test
-    void statusCodeCounts_IsNull() {
-        Exception ex = assertThrows(NullPointerException.class,
-            () -> new LogResult(1, 10,
-                Map.of("x", 1L), null,
-                0.0, Map.of(), Set.of()));
-        assertEquals("statusCodeCounts пустой", ex.getMessage());
+    void nullResourceCounts_shouldThrowNullPointerException() {
+        Exception e = assertThrows(NullPointerException.class, () ->
+            new LogResult(1, 1.0, null, Map.of(), 0.0, Map.of(), Set.of())
+        );
+        assertEquals("resourceCounts пустой", e.getMessage());
     }
 
     @Test
-    void percentile_IsNegative() {
-        Exception ex = assertThrows(IllegalArgumentException.class,
-            () -> new LogResult(1, 10,
-                Map.of("x", 1L), Map.of(200, 1L),
-                -0.1, Map.of(), Set.of()));
-        assertEquals("percentile меньше нуля", ex.getMessage());
+    void nullStatusCodeCounts_shouldThrowNullPointerException() {
+        Exception e = assertThrows(NullPointerException.class, () ->
+            new LogResult(1, 1.0, Map.of(), null, 0.0, Map.of(), Set.of())
+        );
+        assertEquals("statusCodeCounts пустой", e.getMessage());
+    }
+
+    @Test
+    void negativePercentile_shouldThrowIllegalArgumentException() {
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
+            new LogResult(1, 1.0, Map.of(), Map.of(), -1.0, Map.of(), Set.of())
+        );
+        assertEquals("percentile меньше нуля", e.getMessage());
+    }
+
+    @Test
+    void emptyCollections_shouldBeStoredCorrectly() {
+        LogResult result = new LogResult(
+            0,
+            0.0,
+            Map.of(),
+            Map.of(),
+            0.0,
+            Map.of(),
+            Set.of()
+        );
+
+        assertEquals(0, result.totalRequests());
+        assertEquals(0.0, result.averageResponseSize());
+        assertTrue(result.resourceCounts().isEmpty());
+        assertTrue(result.statusCodeCounts().isEmpty());
+        assertTrue(result.anomalies().isEmpty());
+        assertTrue(result.suspiciousIps().isEmpty());
     }
 }

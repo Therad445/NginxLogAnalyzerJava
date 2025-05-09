@@ -1,11 +1,13 @@
 package backend.academy.loganalyzer.report;
 
 import backend.academy.loganalyzer.model.LogResult;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AsciidocFormatTest {
 
@@ -42,16 +44,39 @@ class AsciidocFormatTest {
 
             * Не обнаружены
             """;
+
         assertEquals(expected, output);
     }
 
     @Test
-    void testFormat_withNullRequests() {
+    void testFormat_withAnomaliesAndSuspiciousIps() {
+        LogResult result = new LogResult(
+            50,
+            300.0,
+            Map.of(),
+            Map.of(500, 5L),
+            500.0,
+            Map.of("errorRate", List.of(
+                new backend.academy.loganalyzer.anomaly.Anomaly(
+                    java.time.Instant.now(), "errorRate", 0.3, 0.1, 2.0))),
+            Set.of("192.168.1.1", "10.0.0.1")
+        );
 
+        AsciidocFormat formatter = new AsciidocFormat();
+        String output = formatter.format(result);
+
+        assertTrue(output.contains("* errorRate — 1 шт."));
+        assertTrue(output.contains("* 192.168.1.1"));
+        assertTrue(output.contains("* 10.0.0.1"));
+    }
+
+    @Test
+    void testFormat_withNullRequests() {
         AsciidocFormat formatter = new AsciidocFormat();
 
         Exception ex = assertThrows(NullPointerException.class,
             () -> formatter.format(null));
+
         assertEquals("Переданы пустые переменные", ex.getMessage());
     }
 }
