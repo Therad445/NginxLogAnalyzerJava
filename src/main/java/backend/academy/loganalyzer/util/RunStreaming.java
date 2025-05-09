@@ -12,13 +12,13 @@ import backend.academy.loganalyzer.model.LogRecord;
 import backend.academy.loganalyzer.parser.NginxLogParser;
 import backend.academy.loganalyzer.reader.Reader;
 import backend.academy.loganalyzer.visual.ChartGenerator;
-import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import static backend.academy.loganalyzer.alert.buildAlertManager.buildAlertManager;
 
 @Slf4j
