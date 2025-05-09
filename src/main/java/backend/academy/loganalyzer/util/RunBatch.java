@@ -20,7 +20,6 @@ import backend.academy.loganalyzer.report.LogReportFormat;
 import backend.academy.loganalyzer.report.LogReportFormatFactory;
 import backend.academy.loganalyzer.visual.ChartGenerator;
 import backend.academy.loganalyzer.visual.PdfReportGenerator;
-import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import static backend.academy.loganalyzer.alert.buildAlertManager.buildAlertManager;
 
 @Slf4j
