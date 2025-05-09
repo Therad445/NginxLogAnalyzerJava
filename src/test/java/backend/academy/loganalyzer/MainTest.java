@@ -1,6 +1,5 @@
-package backend.academy;
+package backend.academy.loganalyzer;
 
-import backend.academy.loganalyzer.config.Config;
 import backend.academy.loganalyzer.reader.Reader;
 import backend.academy.loganalyzer.reader.ReaderSelector;
 import org.junit.jupiter.api.Test;
