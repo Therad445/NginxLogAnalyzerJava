@@ -61,10 +61,10 @@ public class TelegramAlertManager implements AlertManager {
 
         try (Response response = client().newCall(req).execute()) {
             if (!response.isSuccessful()) {
-                log.error("❌ Telegram API error: {} → {}", response.code(), response.body().string());
+                log.error("Telegram API error: {} → {}", response.code(), response.body().string());
             }
         } catch (IOException e) {
-            log.error("❌ Telegram alert failed: {}", e.getMessage());
+            log.error("Telegram alert failed: {}", e.getMessage());
         }
     }
 
@@ -86,9 +86,9 @@ public class TelegramAlertManager implements AlertManager {
 
             try (Response response = client().newCall(request).execute()) {
                 if (!response.isSuccessful()) {
-                    log.error("❌ Telegram photo upload failed: {} → {}", response.code(), response.body().string());
+                    log.error("Telegram photo upload failed: {} → {}", response.code(), response.body().string());
                 } else {
-                    log.info("📤 Фото успешно отправлено в Telegram");
+                    log.info("Фото успешно отправлено в Telegram");
                 }
             }
         } catch (Exception e) {
