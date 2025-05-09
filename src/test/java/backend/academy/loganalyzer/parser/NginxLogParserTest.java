@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static backend.academy.loganalyzer.model.HttpMethod.*;
+import static backend.academy.loganalyzer.model.HttpMethod.GET;
+import static backend.academy.loganalyzer.model.HttpMethod.POST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
