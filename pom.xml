@@ -486,7 +486,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>backend.academy.loganalyzer.api.ApiApplication</mainClass>
+                            <mainClass>io.github.therad445.loganalyzer.api.ApiApplication</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -567,7 +567,7 @@
                             <manifest>
                                 <addClasspath>true</addClasspath>
                                 <classpathPrefix>lib/</classpathPrefix>
-                                <mainClass>backend.academy.loganalyzer.Main</mainClass>
+                                <mainClass>io.github.therad445.loganalyzer.Main</mainClass>
                             </manifest>
                         </archive>
                     </configuration>
