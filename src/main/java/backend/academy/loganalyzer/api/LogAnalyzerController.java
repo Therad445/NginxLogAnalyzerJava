@@ -68,6 +68,6 @@ public class LogAnalyzerController {
 
     @GetMapping("/ping")
     public String ping() {
-        return "✅ NginxLogAnalyzer API работает";
+        return "NginxLogAnalyzer API работает";
     }
 }

@@ -37,7 +37,7 @@ class LogAnalyzerControllerTest {
     void pingReturnsAliveMessage() throws Exception {
         mvc.perform(get("/analyze/ping"))
             .andExpect(status().isOk())
-            .andExpect(content().string("✅ NginxLogAnalyzer API работает"));
+            .andExpect(content().string("NginxLogAnalyzer API работает"));
     }
 
     @Test

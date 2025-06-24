@@ -158,7 +158,7 @@ suspicious:
 Проверка доступности.  
 Ответ:
 ```
-✅ NginxLogAnalyzer API работает
+NginxLogAnalyzer API работает
 ```
 
 ---
