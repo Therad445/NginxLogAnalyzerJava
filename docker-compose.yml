@@ -1,0 +1,16 @@
+# MIT License
+version: '3'
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    environment:
+      - CLICKHOUSE_PASSWORD=chpass
+    ports:
+      - "8123:8123"
+  vector:
+    image: timberio/vector:0.34-alpine
+    volumes:
+      - ./data/sample_logs:/var/log/nginx:ro
+    command: >
+      vector --config-yaml "\
+        sources:\n          nginx:\n            type: file\n            include: ['/var/log/nginx/access_sample.log']\n        sinks:\n          clickhouse:\n            type: clickhouse\n            inputs: [nginx]\n            endpoint: http://clickhouse:8123\n            table: access\n      "

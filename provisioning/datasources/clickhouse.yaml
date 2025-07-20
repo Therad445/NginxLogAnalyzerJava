@@ -1,0 +1,7 @@
+# MIT License
+apiVersion: 1
+datasources:
+  - name: ClickHouse
+    type: grafana-clickhouse-datasource
+    url: http://clickhouse:8123
+    isDefault: true

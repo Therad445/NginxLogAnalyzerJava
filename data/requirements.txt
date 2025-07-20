@@ -1,0 +1,2 @@
+# MIT License
+requests==2.31.0
