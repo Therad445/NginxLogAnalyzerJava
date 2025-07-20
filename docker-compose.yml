@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # docker-compose.yml
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    environment:
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+      CLICKHOUSE_DB: logs
+      CLICKHOUSE_USER: loguser
+      CLICKHOUSE_PASSWORD: chpass
+    ports:
+      - "18123:8123"   # HTTP
+      - "19000:9000"   # native
+    healthcheck:
+      test: [ "CMD-SHELL",
+              "clickhouse client --user loguser --password chpass --query 'SELECT 1' >/dev/null" ]
+
+
+
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./data/sample_logs:/var/log/nginx
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+  vector:
+    image: timberio/vector:0.34.1-alpine
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    volumes:
+      - ./vector/vector.yaml:/etc/vector/vector.yaml:ro
+      - ./data/sample_logs:/var/log/nginx
+    command: ["--config", "/etc/vector/vector.yaml"]
