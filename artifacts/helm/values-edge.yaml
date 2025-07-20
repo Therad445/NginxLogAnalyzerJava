@@ -1,0 +1,33 @@
+vector:
+    daemonset:
+        enabled: true
+    extraVolumeMounts:
+        -   name: nginx-logs
+            mountPath: /var/log/nginx
+    extraVolumes:
+        -   name: nginx-logs
+            hostPath:
+                path: /var/log/nginx
+    customConfig: |
+        sources:
+          nginx:
+            type: file
+            include: ["/var/log/nginx/access.log"]
+        transforms:
+          parse:
+            type: remap
+            inputs: [nginx]
+            source: |
+              .timestamp = to_timestamp!(string!(.timestamp))
+        sinks:
+          clickhouse:
+            endpoint: http://clickhouse:8123
+            database: logs
+            username: loguser
+            password: chpass
+            table: access
+          kafka:
+            type: kafka
+            inputs: [parse]
+            bootstrap_servers: kafka:9092
+            topic: nginx_errors

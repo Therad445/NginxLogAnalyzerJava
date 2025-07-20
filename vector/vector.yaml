@@ -1,0 +1,30 @@
+sources:
+    nginx_log:
+        type: file
+        include:
+            - "/var/log/nginx/access_sample.log"
+        ignore_older_secs: 0      # читать даже «старый» файл
+
+transforms:
+    parse_nginx:
+        type: remap
+        inputs: [nginx_log]
+        source: |
+            . |= parse_regex!(string!(.message),
+                r'^(?P<remote_addr>\S+) (?P<status>\d{3}) (?P<request_time>\d+\.\d{3}) "(?P<request>[^"]+)"')
+
+
+
+
+sinks:
+    ck:
+        type: clickhouse
+        inputs: [parse_nginx]
+        endpoint: http://clickhouse:18123
+        database: logs
+        table: access
+        auth:
+            strategy: basic
+            user: loguser
+            password: chpass
+        compression: gzip
