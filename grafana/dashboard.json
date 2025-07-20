@@ -1,0 +1,18 @@
+{
+  "title": "Nginx Logs",
+  "uid": "nginx",
+  "panels": [
+    {
+      "type": "table",
+      "title": "Recent Alerts",
+      "targets": [
+        {
+          "query": "SELECT * FROM alerts ORDER BY timestamp DESC LIMIT 20",
+          "datasource": "ClickHouse"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 16,
+  "version": 1
+}
