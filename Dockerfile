@@ -7,6 +7,6 @@ RUN mvn clean package -DskipTests
 # ---
 FROM eclipse-temurin:22-jre
 WORKDIR /app
-COPY target/nginx-log-analyzer-1.0.0-jar-with-dependencies.jar app.jar
+COPY target/nginx-log-analyzer-*-jar-with-dependencies.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["nginx-log-analyzer", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
