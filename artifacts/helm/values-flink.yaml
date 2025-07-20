@@ -1,0 +1,7 @@
+jobManager:
+  replicaCount: 1
+taskManager:
+  replicaCount: 1
+job:
+  jarFile: /opt/flink/LogAlertJob.jar
+  className: com.example.LogAlertJob
